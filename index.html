@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Révisions 5ème ➜ 4ème 🎓</title>
+
+<!-- ============================================================
+     STYLE (CSS) : tout ce qui concerne l'apparence du jeu
+     ============================================================ -->
+<style>
+  /* Variables de couleurs : changez-les pour changer le thème ! */
+  :root {
+    --fond1: #6a5cff;
+    --fond2: #a855f7;
+    --carte: #ffffff;
+    --texte: #1e1b3a;
+    --bon: #22c55e;
+    --mauvais: #ef4444;
+    --accent: #ffb020;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: linear-gradient(135deg, var(--fond1), var(--fond2));
+    color: var(--texte);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .carte {
+    background: var(--carte);
+    width: 100%;
+    max-width: 560px;
+    border-radius: 24px;
+    padding: 28px 24px 32px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  }
+
+  h1 { font-size: 1.7rem; text-align: center; margin-bottom: 6px; }
+  .sous-titre { text-align: center; color: #6b7280; margin-bottom: 22px; }
+
+  /* Boutons de choix des matières */
+  .matieres { display: grid; gap: 12px; }
+  .matiere-btn {
+    border: none;
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform .12s ease, filter .12s ease;
+  }
+  .matiere-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
+  .matiere-btn .emoji { font-size: 1.6rem; }
+
+  /* Barre du haut pendant le jeu (score, vies, progression) */
+  .barre-haut {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-weight: 700;
+  }
+  .progression {
+    height: 10px;
+    background: #ece9ff;
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progression-remplie {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #ff7a59);
+    transition: width .3s ease;
+  }
+
+  .question {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    line-height: 1.4;
+  }
+
+  .reponses { display: grid; gap: 12px; }
+  .reponse-btn {
+    border: 2px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 1.02rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all .12s ease;
+  }
+  .reponse-btn:hover { border-color: var(--fond1); background: #f3f0ff; }
+  .reponse-btn:disabled { cursor: default; }
+  .reponse-btn.bonne { border-color: var(--bon); background: #dcfce7; }
+  .reponse-btn.mauvaise { border-color: var(--mauvais); background: #fee2e2; }
+
+  /* Zone d'explication qui apparaît après la réponse */
+  .explication {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: #fff7e6;
+    border-left: 5px solid var(--accent);
+    display: none;
+  }
+  .explication.visible { display: block; }
+  .explication strong { display: block; margin-bottom: 4px; }
+
+  .bouton-principal {
+    margin-top: 18px;
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--fond1);
+    cursor: pointer;
+    transition: filter .12s ease;
+  }
+  .bouton-principal:hover { filter: brightness(1.1); }
+
+  /* Écran de fin */
+  .fin { text-align: center; }
+  .fin .gros-score { font-size: 3rem; font-weight: 800; margin: 10px 0; }
+  .fin .message { font-size: 1.1rem; color: #4b5563; margin-bottom: 18px; }
+
+  /* --- Profil / XP sur l'écran d'accueil --- */
+  .profil {
+    background: #f3f0ff;
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+  .profil-haut {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .niveau-pastille {
+    background: var(--fond1);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: .9rem;
+  }
+  .xp-bar {
+    height: 14px;
+    background: #e0dbff;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .xp-rempli {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #ff7a59);
+    border-radius: 99px;
+    transition: width .4s ease;
+  }
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .badge {
+    font-size: 1.4rem;
+    background: #fff;
+    border-radius: 10px;
+    padding: 4px 8px;
+    cursor: default;
+    box-shadow: 0 2px 5px rgba(0,0,0,.08);
+  }
+  .badge-vide { font-size: .85rem; color: #6b7280; }
+
+  /* --- Overlay de montée de niveau --- */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20,16,50,.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 16px;
+  }
+  .overlay-carte {
+    background: #fff;
+    border-radius: 24px;
+    padding: 28px;
+    text-align: center;
+    max-width: 360px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    animation: pop .35s ease;
+  }
+  @keyframes pop {
+    0%   { transform: scale(.6); opacity: 0; }
+    100% { transform: scale(1);  opacity: 1; }
+  }
+  .niveau-grand { font-size: 1.4rem; font-weight: 800; color: var(--fond1); }
+  .recompense-emoji { font-size: 4rem; margin: 8px 0; }
+  .recompense-nom { font-size: 1.3rem; font-weight: 800; }
+  .recompense-desc { color: #4b5563; margin: 8px 0 4px; }
+
+  /* Confettis qui tombent quand on monte de niveau */
+  .confettis { position: absolute; inset: 0; pointer-events: none; }
+  .confetti {
+    position: absolute;
+    top: -16px;
+    width: 9px;
+    height: 14px;
+    border-radius: 2px;
+    animation: tomber 1.4s linear forwards;
+  }
+  @keyframes tomber { to { top: 110%; opacity: .2; } }
+
+  /* --- Rédaction & dictée du jour --- */
+  textarea {
+    width: 100%;
+    min-height: 170px;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  textarea:focus { outline: none; border-color: var(--fond1); }
+  .redaction-sujet {
+    font-size: 1.18rem;
+    font-weight: 700;
+    background: #f3f0ff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .redaction-conseil { color: #6b7280; font-size: .92rem; margin-bottom: 14px; }
+  .dictee-controles { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .btn-mini {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--fond1);
+    cursor: pointer;
+  }
+  .btn-mini:hover { filter: brightness(1.1); }
+  .texte-dictee {
+    background: #dcfce7;
+    border-left: 5px solid var(--bon);
+    border-radius: 12px;
+    padding: 14px 16px;
+    line-height: 1.7;
+    font-size: 1.05rem;
+  }
+  .photo-apercu {
+    display: block;
+    max-width: 100%;
+    border-radius: 14px;
+    border: 2px solid #e5e7eb;
+    margin: 4px 0 14px;
+  }
+
+  .cache { display: none; }
+</style>
+</head>
+<body>
+
+  <div class="carte">
+
+    <!-- ÉCRAN 1 : choix de la matière (plus utilisé : on va direct sur le mélange) -->
+    <div id="ecran-accueil" class="cache">
+      <h1>🎓 Révisions 5ème ➜ 4ème</h1>
+      <p class="sous-titre">Révise ton programme de 5ème pour bien entrer en 4ème ! 🚀<br>📅 De nouvelles questions chaque jour !</p>
+      <div class="matieres" id="liste-matieres"></div>
+    </div>
+
+    <!-- ÉCRAN 2 : le quiz -->
+    <div id="ecran-jeu" class="cache">
+      <div class="barre-haut">
+        <span id="info-matiere">Maths</span>
+        <span>⭐ <span id="score">0</span></span>
+        <span id="vies">❤️❤️❤️</span>
+      </div>
+      <div class="progression"><div class="progression-remplie" id="barre-prog"></div></div>
+
+      <div class="question" id="texte-question"></div>
+      <div class="reponses" id="liste-reponses"></div>
+
+      <div class="explication" id="explication"></div>
+
+      <button class="bouton-principal cache" id="btn-suivant">Question suivante →</button>
+    </div>
+
+    <!-- ÉCRAN 3 : fin de partie -->
+    <div id="ecran-fin" class="cache fin">
+      <h1 id="titre-fin">Bravo ! 🎉</h1>
+      <div class="gros-score" id="score-final">0 / 0</div>
+      <p class="message" id="xp-gagne" style="color:#f59e0b;font-weight:700;"></p>
+      <p class="message" id="message-fin"></p>
+
+      <!-- Profil du joueur : niveau, barre d'XP et badges (affiché ici après chaque partie) -->
+      <div class="profil">
+        <div class="profil-haut">
+          <span class="niveau-pastille">Niveau <span id="home-niveau">1</span></span>
+          <span id="home-xp-txt">0 / 100 XP</span>
+        </div>
+        <div class="xp-bar"><div class="xp-rempli" id="home-xp-bar"></div></div>
+        <div class="badges" id="home-badges"></div>
+      </div>
+
+      <button class="bouton-principal" id="btn-rejouer">Rejouer 🎲</button>
+
+      <p style="margin:16px 0 6px;font-weight:700;color:#6b7280;">📅 Tes rendez-vous du jour</p>
+      <button class="bouton-principal" id="btn-defi" style="background:#ef4444;">🔥 Défi du jour</button>
+      <button class="bouton-principal" id="btn-redaction" style="background:#16a34a;margin-top:10px;">✍️ Rédaction du jour</button>
+      <button class="bouton-principal" id="btn-dictee" style="background:#0ea5e9;margin-top:10px;">📝 Dictée du jour</button>
+    </div>
+
+    <!-- ÉCRAN 4 : le défi du jour (une question de 4ème, plus difficile) -->
+    <div id="ecran-defi" class="cache">
+      <div class="barre-haut">
+        <span>🔥 Défi du jour</span>
+        <span id="defi-matiere">Maths</span>
+      </div>
+      <p class="sous-titre" style="margin-bottom:16px;">Une question de 4ème, plus difficile ! 💪<br>+50 XP si tu réussis du premier coup aujourd'hui.</p>
+      <div class="question" id="defi-question"></div>
+      <div class="reponses" id="defi-reponses"></div>
+      <div class="explication" id="defi-explication"></div>
+      <button class="bouton-principal cache" id="defi-retour">← Retour</button>
+    </div>
+
+    <!-- ÉCRAN 5 : la rédaction du jour (on écrit sur papier, puis photo) -->
+    <div id="ecran-redaction" class="cache">
+      <div class="barre-haut">
+        <span>✍️ Rédaction du jour</span>
+        <span>📝 sur feuille</span>
+      </div>
+      <div class="redaction-sujet" id="redaction-sujet"></div>
+      <p class="redaction-conseil" id="redaction-conseil"></p>
+      <p class="redaction-conseil">✏️ Écris ta rédaction sur une feuille, puis prends-la en photo ci-dessous.</p>
+      <input type="file" accept="image/*" capture="environment" id="redaction-photo-input" style="display:none">
+      <button class="bouton-principal" id="redaction-photo-btn" style="background:#16a34a;">📷 Photo de mon travail</button>
+      <img id="redaction-photo-apercu" class="photo-apercu cache" alt="Photo de ma rédaction">
+      <button class="bouton-principal" id="redaction-retour">← Retour</button>
+    </div>
+
+    <!-- ÉCRAN 6 : la dictée du jour (on écrit sur papier, puis photo) -->
+    <div id="ecran-dictee" class="cache">
+      <div class="barre-haut">
+        <span>📝 Dictée du jour</span>
+        <span id="dictee-num"></span>
+      </div>
+      <p class="sous-titre" style="margin-bottom:14px;">Clique sur 🔊 pour écouter, écris la dictée sur une feuille, puis vérifie !</p>
+      <div class="dictee-controles">
+        <button class="btn-mini" id="dictee-ecouter">🔊 Écouter</button>
+        <button class="btn-mini" id="dictee-lent" style="background:#a855f7;">🐢 Plus lentement</button>
+      </div>
+      <input type="file" accept="image/*" capture="environment" id="dictee-photo-input" style="display:none">
+      <button class="bouton-principal" id="dictee-photo-btn" style="background:#16a34a;">📷 Photo de mon travail</button>
+      <img id="dictee-photo-apercu" class="photo-apercu cache" alt="Photo de ma dictée">
+      <button class="bouton-principal" id="dictee-corriger">Voir le texte correct ✅</button>
+      <div id="dictee-correction" class="cache" style="margin-top:8px;"></div>
+      <button class="bouton-principal cache" id="dictee-retour" style="margin-top:10px;">← Retour</button>
+    </div>
+
+  </div>
+
+  <!-- OVERLAY : s'affiche quand on monte de niveau, avec la récompense -->
+  <div id="overlay-niveau" class="overlay cache">
+    <div class="overlay-carte">
+      <div class="confettis" id="confettis"></div>
+      <div class="niveau-grand">⬆️ Niveau <span id="ov-niveau">2</span> !</div>
+      <div class="recompense-emoji" id="ov-emoji">🌱</div>
+      <div class="recompense-nom" id="ov-nom">Apprenti</div>
+      <div class="recompense-desc" id="ov-desc"></div>
+      <button class="bouton-principal" id="ov-btn">Génial ! 🎉</button>
+    </div>
+  </div>
+
+<!-- ============================================================
+     LOGIQUE DU JEU (JavaScript)
+     ============================================================ -->
+<script>
+/* -----------------------------------------------------------
+   1) LES QUESTIONS
+   Chaque question a : la matière, l'énoncé, 4 choix,
+   l'index de la bonne réponse (0 = premier choix),
+   et une petite explication.
+   👉 Pour ajouter une question, copie un bloc et change le texte.
+   ----------------------------------------------------------- */
+const QUESTIONS = [
+  // ---------- MATHS ----------
+  { matiere:"Maths", q:"Combien font (-5) + (-3) ?",
+    choix:["-8","-2","8","2"], bonne:0,
+    expl:"Deux nombres négatifs : on additionne et on garde le signe «−». 5 + 3 = 8, donc −8." },
+  { matiere:"Maths", q:"Combien font (-7) + 4 ?",
+    choix:["-11","-3","3","11"], bonne:1,
+    expl:"Signes différents : on soustrait (7 − 4 = 3) et on garde le signe du plus grand : −3." },
+  { matiere:"Maths", q:"Combien font 3/4 + 1/4 ?",
+    choix:["4/8","1","3/8","2/4"], bonne:1,
+    expl:"Même dénominateur : on additionne les numérateurs. 3 + 1 = 4, donc 4/4 = 1." },
+  { matiere:"Maths", q:"Quel est le périmètre d'un carré de côté 6 cm ?",
+    choix:["12 cm","36 cm","24 cm","18 cm"], bonne:2,
+    expl:"Périmètre du carré = côté × 4 = 6 × 4 = 24 cm." },
+  { matiere:"Maths", q:"Quelle est l'aire d'un rectangle de 5 cm sur 3 cm ?",
+    choix:["8 cm²","15 cm²","16 cm²","30 cm²"], bonne:1,
+    expl:"Aire du rectangle = Longueur × largeur = 5 × 3 = 15 cm²." },
+  { matiere:"Maths", q:"25 % de 80, c'est combien ?",
+    choix:["20","25","40","15"], bonne:0,
+    expl:"25 % = un quart. 80 ÷ 4 = 20." },
+  { matiere:"Maths", q:"Combien font 3 + 4 × 2 ?",
+    choix:["14","11","10","24"], bonne:1,
+    expl:"On fait la multiplication d'abord : 4 × 2 = 8, puis 3 + 8 = 11." },
+  { matiere:"Maths", q:"Quelle est l'aire d'un triangle de base 6 cm et de hauteur 4 cm ?",
+    choix:["24 cm²","10 cm²","12 cm²","20 cm²"], bonne:2,
+    expl:"Aire du triangle = (base × hauteur) ÷ 2 = (6 × 4) ÷ 2 = 12 cm²." },
+  { matiere:"Maths", q:"Combien vaut la somme des angles d'un triangle ?",
+    choix:["90°","180°","360°","120°"], bonne:1,
+    expl:"Les trois angles d'un triangle font toujours 180° au total." },
+  { matiere:"Maths", q:"Combien font 2 × (3 + 5) ?",
+    choix:["13","16","10","11"], bonne:1,
+    expl:"On calcule d'abord la parenthèse : 3 + 5 = 8, puis 2 × 8 = 16." },
+  { matiere:"Maths", q:"La fraction 1/2 correspond à quel pourcentage ?",
+    choix:["25 %","50 %","75 %","10 %"], bonne:1,
+    expl:"La moitié, c'est 50 %." },
+  { matiere:"Maths", q:"Quel est le volume d'un cube d'arête 2 cm ?",
+    choix:["6 cm³","8 cm³","4 cm³","12 cm³"], bonne:1,
+    expl:"Volume du cube = arête × arête × arête = 2 × 2 × 2 = 8 cm³." },
+  { matiere:"Maths", q:"La fraction 4/8 simplifiée donne :",
+    choix:["1/2","2/3","1/4","4/8"], bonne:0,
+    expl:"On divise en haut et en bas par 4 : 4÷4 = 1 et 8÷4 = 2, donc 1/2." },
+  { matiere:"Maths", q:"Combien font 8 − 12 ?",
+    choix:["4","-4","-20","20"], bonne:1,
+    expl:"On part de 8 et on enlève 12 : on passe dans les négatifs, résultat −4." },
+  { matiere:"Maths", q:"Combien font 2/5 + 1/5 ?",
+    choix:["3/10","2/10","3/5","1/5"], bonne:2,
+    expl:"Même dénominateur : on additionne les numérateurs : 2 + 1 = 3, donc 3/5." },
+  { matiere:"Maths", q:"Quelle est la formule du périmètre d'un cercle ?",
+    choix:["côté × 4","2 × π × rayon","longueur × largeur","π × rayon²"], bonne:1,
+    expl:"Le périmètre (circonférence) d'un cercle = 2 × π × rayon (ou π × diamètre)." },
+  { matiere:"Maths", q:"3 stylos coûtent 6 €. Combien coûtent 5 stylos (même prix) ?",
+    choix:["9 €","10 €","11 €","12 €"], bonne:1,
+    expl:"Proportionnalité : 1 stylo = 6 ÷ 3 = 2 €, donc 5 stylos = 5 × 2 = 10 €." },
+  { matiere:"Maths", q:"Quelle est la moyenne de 4 et 10 ?",
+    choix:["6","7","14","8"], bonne:1,
+    expl:"Moyenne = (4 + 10) ÷ 2 = 14 ÷ 2 = 7." },
+  { matiere:"Maths", q:"Combien font 10 % de 50 ?",
+    choix:["5","10","15","50"], bonne:0,
+    expl:"10 % = un dixième. 50 ÷ 10 = 5." },
+  { matiere:"Maths", q:"La fraction 3/10 écrite en nombre décimal donne :",
+    choix:["0,3","3,10","0,03","30"], bonne:0,
+    expl:"3/10 = 0,3 (3 dixièmes)." },
+
+  // ---------- FRANÇAIS ----------
+  { matiere:"Français", q:"Quelle est la nature du mot « rapidement » ?",
+    choix:["Un adjectif","Un verbe","Un adverbe","Un nom"], bonne:2,
+    expl:"« rapidement » se termine par -ment et précise comment : c'est un adverbe." },
+  { matiere:"Français", q:"« Je (manger) » à l'imparfait donne :",
+    choix:["je mange","je mangeais","je mangerai","j'ai mangé"], bonne:1,
+    expl:"À l'imparfait, la 1re personne du singulier se termine par -ais : je mangeais." },
+  { matiere:"Français", q:"Dans « Le chat dort », quel est le sujet ?",
+    choix:["Le chat","dort","Le","chat dort"], bonne:0,
+    expl:"Le sujet fait l'action. Qui dort ? « Le chat ». C'est le sujet." },
+  { matiere:"Français", q:"Quel est le contraire de « courageux » ?",
+    choix:["Fort","Peureux","Rapide","Gentil"], bonne:1,
+    expl:"Le contraire (antonyme) de courageux est peureux (ou lâche)." },
+  { matiere:"Français", q:"« Les enfants ___ contents. » Quel verbe ?",
+    choix:["est","sont","es","son"], bonne:1,
+    expl:"Le sujet « les enfants » est au pluriel : verbe être = sont." },
+  { matiere:"Français", q:"« Je (manger) » au passé composé donne :",
+    choix:["je mangeais","j'ai mangé","je mangerai","je mange"], bonne:1,
+    expl:"Passé composé = auxiliaire avoir au présent + participe passé : j'ai mangé." },
+  { matiere:"Français", q:"Quelle est la nature du mot « beau » ?",
+    choix:["Un nom","Un verbe","Un adjectif","Un adverbe"], bonne:2,
+    expl:"« beau » décrit un nom (un beau jardin) : c'est un adjectif." },
+  { matiere:"Français", q:"« Rouge comme une tomate » est une figure de style appelée :",
+    choix:["Une comparaison","Une métaphore","Une rime","Une question"], bonne:0,
+    expl:"Avec le mot « comme », on compare deux choses : c'est une comparaison." },
+  { matiere:"Français", q:"Quel est le pluriel de « cheval » ?",
+    choix:["chevals","chevaux","chevaus","chevales"], bonne:1,
+    expl:"Les noms en -al font souvent leur pluriel en -aux : chevaux." },
+  { matiere:"Français", q:"Quel est un synonyme de « content » ?",
+    choix:["Triste","Heureux","Fatigué","Méchant"], bonne:1,
+    expl:"Un synonyme a un sens proche : content = heureux." },
+  { matiere:"Français", q:"« Aller » au futur, je :",
+    choix:["j'allais","j'irai","je vais","je suis allé"], bonne:1,
+    expl:"Le futur du verbe aller est irrégulier : j'irai, tu iras…" },
+  { matiere:"Français", q:"Quel est le pluriel de « un journal » ?",
+    choix:["des journals","des journaux","des journales","des journauts"], bonne:1,
+    expl:"Les noms en -al font souvent leur pluriel en -aux : des journaux." },
+  { matiere:"Français", q:"Dans « Il mange une pomme », quel est le COD (ce qu'on mange) ?",
+    choix:["Il","mange","une pomme","une"], bonne:2,
+    expl:"Le COD répond à « quoi ? ». Il mange quoi ? « une pomme »." },
+  { matiere:"Français", q:"« Nous (finir) » au présent donne :",
+    choix:["nous finons","nous finissons","nous finit","nous finissez"], bonne:1,
+    expl:"Au présent, les verbes en -ir comme finir font : nous finissons." },
+  { matiere:"Français", q:"Quel est le féminin de « acteur » ?",
+    choix:["acteuse","actrice","acteure","actricesse"], bonne:1,
+    expl:"Le féminin de acteur est actrice." },
+  { matiere:"Français", q:"Quel est l'infinitif du verbe dans « nous allons » ?",
+    choix:["allons","aller","allé","allions"], bonne:1,
+    expl:"« nous allons » vient du verbe aller (son infinitif)." },
+  { matiere:"Français", q:"Quel est le contraire de « monter » ?",
+    choix:["grimper","descendre","sauter","tomber"], bonne:1,
+    expl:"Le contraire de monter est descendre." },
+  { matiere:"Français", q:"Une phrase qui pose une question est de type :",
+    choix:["déclarative","interrogative","exclamative","impérative"], bonne:1,
+    expl:"Une phrase qui pose une question est une phrase interrogative (elle finit par ?)." },
+  { matiere:"Français", q:"Dans un roman de chevalerie du Moyen Âge, le héros est souvent un :",
+    choix:["chevalier","pirate","cowboy","astronaute"], bonne:0,
+    expl:"Les récits du Moyen Âge mettent en scène des chevaliers (comme dans les romans de la Table ronde)." },
+  { matiere:"Français", q:"Quel mot est un synonyme de « joyeux » ?",
+    choix:["triste","content","fatigué","méchant"], bonne:1,
+    expl:"Un synonyme a un sens proche : joyeux = content." },
+
+  // ---------- HISTOIRE-GÉO ----------
+  { matiere:"Histoire-Géo", q:"En quelle année Christophe Colomb arrive-t-il en Amérique ?",
+    choix:["1492","1515","1789","1066"], bonne:0,
+    expl:"Christophe Colomb atteint l'Amérique en 1492." },
+  { matiere:"Histoire-Géo", q:"Quel château est le symbole de la Renaissance en France ?",
+    choix:["Versailles","Chambord","La Bastille","Le Louvre médiéval"], bonne:1,
+    expl:"Le château de Chambord (Val de Loire) est un grand symbole de la Renaissance." },
+  { matiere:"Histoire-Géo", q:"Quel fleuve traverse Paris ?",
+    choix:["La Loire","Le Rhône","La Seine","La Garonne"], bonne:2,
+    expl:"La Seine traverse Paris." },
+  { matiere:"Histoire-Géo", q:"Quelle religion est née au Moyen Âge et s'est répandue en Arabie ?",
+    choix:["Le bouddhisme","L'islam","L'hindouisme","Le shintoïsme"], bonne:1,
+    expl:"L'islam apparaît au VIIe siècle dans la péninsule arabique." },
+  { matiere:"Histoire-Géo", q:"Combien y a-t-il de continents sur Terre ?",
+    choix:["5","6","7","4"], bonne:2,
+    expl:"On compte généralement 7 continents (Afrique, Amérique du Nord, Amérique du Sud, Antarctique, Asie, Europe, Océanie)." },
+  { matiere:"Histoire-Géo", q:"Au Moyen Âge, le seigneur donne une terre (un fief) à son :",
+    choix:["roi","vassal","évêque","marchand"], bonne:1,
+    expl:"Le seigneur donne un fief à son vassal, qui lui jure fidélité : c'est la féodalité." },
+  { matiere:"Histoire-Géo", q:"Quelle ville était la capitale de l'Empire byzantin ?",
+    choix:["Rome","Athènes","Constantinople","Le Caire"], bonne:2,
+    expl:"La capitale de l'Empire byzantin était Constantinople (aujourd'hui Istanbul)." },
+  { matiere:"Histoire-Géo", q:"Qui a mis au point l'imprimerie vers 1450 ?",
+    choix:["Gutenberg","Léonard de Vinci","Charlemagne","Jeanne d'Arc"], bonne:0,
+    expl:"Gutenberg invente l'imprimerie à caractères mobiles vers 1450, en Allemagne." },
+  { matiere:"Histoire-Géo", q:"Au Moyen Âge, qui est le chef de l'Église catholique ?",
+    choix:["Le roi","Le pape","Le seigneur","L'empereur"], bonne:1,
+    expl:"Le pape, à Rome, est le chef de l'Église catholique." },
+  { matiere:"Histoire-Géo", q:"Parmi ces énergies, laquelle est renouvelable ?",
+    choix:["Le charbon","Le pétrole","L'énergie solaire","Le gaz"], bonne:2,
+    expl:"Le soleil ne s'épuise pas : l'énergie solaire est renouvelable, contrairement au charbon, pétrole et gaz." },
+  { matiere:"Histoire-Géo", q:"Quel est le plus grand océan du monde ?",
+    choix:["L'Atlantique","Le Pacifique","L'océan Indien","L'Arctique"], bonne:1,
+    expl:"L'océan Pacifique est le plus grand et le plus profond du monde." },
+  { matiere:"Histoire-Géo", q:"Quel roi des Francs est couronné empereur en l'an 800 ?",
+    choix:["Clovis","Charlemagne","Louis XIV","Napoléon"], bonne:1,
+    expl:"Charlemagne est couronné empereur d'Occident en 800." },
+  { matiere:"Histoire-Géo", q:"Les chevaliers et les seigneurs vivaient surtout au :",
+    choix:["Moyen Âge","XXe siècle","temps des dinosaures","XXIe siècle"], bonne:0,
+    expl:"Chevaliers, châteaux forts et seigneurs sont caractéristiques du Moyen Âge." },
+  { matiere:"Histoire-Géo", q:"Quel explorateur a mené la première expédition autour du monde ?",
+    choix:["Magellan","Vasco de Gama","Marco Polo","Jacques Cartier"], bonne:0,
+    expl:"L'expédition de Magellan (1519-1522) réalise le premier tour du monde." },
+  { matiere:"Histoire-Géo", q:"Dans quel pays la Renaissance est-elle née ?",
+    choix:["En Italie","En Chine","En Égypte","Au Brésil"], bonne:0,
+    expl:"La Renaissance est née en Italie au XVe siècle, puis s'est répandue en Europe." },
+  { matiere:"Histoire-Géo", q:"Une grande cathédrale du Moyen Âge est souvent de style :",
+    choix:["moderne","gothique","antique","industriel"], bonne:1,
+    expl:"Les cathédrales du Moyen Âge sont de style roman puis gothique (grandes voûtes, vitraux)." },
+  { matiere:"Histoire-Géo", q:"Quelle ressource, indispensable à la vie, manque dans certaines régions ?",
+    choix:["L'eau douce","Le sable","Le plastique","Le béton"], bonne:0,
+    expl:"L'eau douce est vitale mais inégalement répartie : elle manque dans plusieurs régions du monde." },
+  { matiere:"Histoire-Géo", q:"Quel gaz, rejeté par les voitures et les usines, réchauffe le climat ?",
+    choix:["L'oxygène","Le dioxyde de carbone","L'hélium","L'azote"], bonne:1,
+    expl:"Le dioxyde de carbone (CO₂) est un gaz à effet de serre qui réchauffe le climat." },
+  { matiere:"Histoire-Géo", q:"Aujourd'hui, la majorité des habitants de la planète vivent :",
+    choix:["à la campagne","en ville","en forêt","en montagne"], bonne:1,
+    expl:"Depuis quelques années, plus de la moitié de l'humanité vit en ville : c'est l'urbanisation." },
+  { matiere:"Histoire-Géo", q:"Sur quel continent se trouve le désert du Sahara ?",
+    choix:["L'Asie","L'Afrique","L'Amérique","L'Europe"], bonne:1,
+    expl:"Le Sahara, plus grand désert chaud du monde, se trouve en Afrique." },
+
+  // ---------- ANGLAIS ----------
+  { matiere:"Anglais", q:"« He ___ to school every day. » (present simple)",
+    choix:["go","goes","going","gone"], bonne:1,
+    expl:"Au présent simple avec he/she/it, on ajoute -s : he goes." },
+  { matiere:"Anglais", q:"Comment dit-on « une pomme » en anglais ?",
+    choix:["An orange","A banana","An apple","A pear"], bonne:2,
+    expl:"« une pomme » = an apple." },
+  { matiere:"Anglais", q:"Quel est le pluriel de « child » ?",
+    choix:["childs","children","childes","child"], bonne:1,
+    expl:"« child » est irrégulier : son pluriel est children." },
+  { matiere:"Anglais", q:"« I ___ a student. » Quel verbe ?",
+    choix:["am","is","are","be"], bonne:0,
+    expl:"Avec « I », le verbe to be devient am : I am." },
+  { matiere:"Anglais", q:"Que veut dire « Monday » ?",
+    choix:["Mardi","Lundi","Dimanche","Mois"], bonne:1,
+    expl:"« Monday » = lundi." },
+  { matiere:"Anglais", q:"Quel est le prétérit (passé) de « go » ?",
+    choix:["goed","went","gone","goes"], bonne:1,
+    expl:"« go » est irrégulier : son passé simple (prétérit) est went." },
+  { matiere:"Anglais", q:"« There ___ two cats. » Quel mot ?",
+    choix:["is","are","be","am"], bonne:1,
+    expl:"« two cats » est au pluriel : there are." },
+  { matiere:"Anglais", q:"Comment dit-on « rouge » en anglais ?",
+    choix:["blue","green","red","black"], bonne:2,
+    expl:"« rouge » = red." },
+  { matiere:"Anglais", q:"« How old are you? » demande :",
+    choix:["ton nom","ton âge","ton pays","l'heure"], bonne:1,
+    expl:"« How old are you? » signifie « Quel âge as-tu ? »." },
+  { matiere:"Anglais", q:"Quel est le pluriel de « mouse » (souris) ?",
+    choix:["mouses","mice","mouse","mices"], bonne:1,
+    expl:"« mouse » est irrégulier : son pluriel est mice." },
+  { matiere:"Anglais", q:"Comment dit-on « un chien » en anglais ?",
+    choix:["a cat","a dog","a bird","a fish"], bonne:1,
+    expl:"« un chien » = a dog." },
+  { matiere:"Anglais", q:"« They ___ happy. » Quel mot ?",
+    choix:["is","am","are","be"], bonne:2,
+    expl:"« they » (ils/elles) va avec are : they are happy." },
+  { matiere:"Anglais", q:"Quel est le pluriel de « foot » (pied) ?",
+    choix:["foots","feet","feets","foot"], bonne:1,
+    expl:"« foot » est irrégulier : son pluriel est feet." },
+  { matiere:"Anglais", q:"Comment dit-on « bleu » en anglais ?",
+    choix:["green","blue","red","yellow"], bonne:1,
+    expl:"« bleu » = blue." },
+  { matiere:"Anglais", q:"Comment dit-on « merci » en anglais ?",
+    choix:["please","sorry","thank you","hello"], bonne:2,
+    expl:"« merci » = thank you." },
+  { matiere:"Anglais", q:"« She ___ a cat. » (present simple)",
+    choix:["have","has","haves","having"], bonne:1,
+    expl:"Avec he/she/it, « have » devient has : she has a cat." },
+  { matiere:"Anglais", q:"Que veut dire « Saturday » ?",
+    choix:["vendredi","samedi","dimanche","lundi"], bonne:1,
+    expl:"« Saturday » = samedi." },
+  { matiere:"Anglais", q:"Quel est le contraire de « big » ?",
+    choix:["tall","small","long","fast"], bonne:1,
+    expl:"Le contraire de big (grand) est small (petit)." },
+  { matiere:"Anglais", q:"« We are ___ football. » (en train de jouer)",
+    choix:["play","playing","played","plays"], bonne:1,
+    expl:"Action en cours (present continuous) : be + verbe-ing → are playing." },
+  { matiere:"Anglais", q:"Comment dit-on « l'école » en anglais ?",
+    choix:["home","school","shop","park"], bonne:1,
+    expl:"« l'école » = school." },
+
+  // ---------- ESPAGNOL ----------
+  { matiere:"Espagnol", q:"Comment dit-on « Salut » en espagnol ?",
+    choix:["Adiós","Hola","Gracias","Sí"], bonne:1,
+    expl:"« Hola » veut dire salut / bonjour." },
+  { matiere:"Espagnol", q:"Que veut dire « Gracias » ?",
+    choix:["Bonjour","Merci","Au revoir","Oui"], bonne:1,
+    expl:"« Gracias » = merci." },
+  { matiere:"Espagnol", q:"Comment dit-on « Au revoir » en espagnol ?",
+    choix:["Hola","Adiós","Por favor","Buenos días"], bonne:1,
+    expl:"« Adiós » = au revoir." },
+  { matiere:"Espagnol", q:"« ¿Cómo te llamas? » veut dire :",
+    choix:["Quel âge as-tu ?","Comment t'appelles-tu ?","Où habites-tu ?","Ça va ?"], bonne:1,
+    expl:"« ¿Cómo te llamas? » signifie « Comment t'appelles-tu ? »." },
+  { matiere:"Espagnol", q:"La couleur « rojo » veut dire :",
+    choix:["bleu","vert","rouge","jaune"], bonne:2,
+    expl:"« rojo » = rouge." },
+  { matiere:"Espagnol", q:"Après « uno, dos… », quel nombre vient ensuite ?",
+    choix:["tres","cinco","diez","cuatro"], bonne:0,
+    expl:"On compte : uno (1), dos (2), tres (3)." },
+  { matiere:"Espagnol", q:"Que veut dire « un gato » ?",
+    choix:["un chien","un chat","un oiseau","un cheval"], bonne:1,
+    expl:"« un gato » = un chat." },
+  { matiere:"Espagnol", q:"Que veut dire « una casa » ?",
+    choix:["une voiture","une maison","une école","une ville"], bonne:1,
+    expl:"« una casa » = une maison." },
+  { matiere:"Espagnol", q:"Que veut dire « el agua » ?",
+    choix:["le feu","l'air","l'eau","le pain"], bonne:2,
+    expl:"« el agua » = l'eau." },
+  { matiere:"Espagnol", q:"« Sí » veut dire :",
+    choix:["non","oui","peut-être","merci"], bonne:1,
+    expl:"« Sí » = oui (et « no » = non)." },
+  { matiere:"Espagnol", q:"« Buenos días » se dit surtout :",
+    choix:["le matin","en pleine nuit","pour dire merci","pour dire au revoir"], bonne:0,
+    expl:"« Buenos días » = bonjour, on le dit le matin / dans la journée." },
+  { matiere:"Espagnol", q:"Que veut dire la couleur « amarillo » ?",
+    choix:["rouge","jaune","noir","vert"], bonne:1,
+    expl:"« amarillo » = jaune." },
+  { matiere:"Espagnol", q:"Comment dit-on « non » en espagnol ?",
+    choix:["sí","no","nada","poco"], bonne:1,
+    expl:"« no » = non." },
+  { matiere:"Espagnol", q:"« Por favor » veut dire :",
+    choix:["merci","s'il te plaît","pardon","de rien"], bonne:1,
+    expl:"« Por favor » = s'il te plaît." },
+  { matiere:"Espagnol", q:"Le nombre « cinco » correspond à :",
+    choix:["3","4","5","6"], bonne:2,
+    expl:"uno (1), dos (2), tres (3), cuatro (4), cinco (5)." },
+  { matiere:"Espagnol", q:"Que veut dire « un perro » ?",
+    choix:["un chat","un chien","un cheval","un oiseau"], bonne:1,
+    expl:"« un perro » = un chien (et « un gato » = un chat)." },
+  { matiere:"Espagnol", q:"« la escuela » veut dire :",
+    choix:["la maison","l'école","la ville","la voiture"], bonne:1,
+    expl:"« la escuela » = l'école." },
+  { matiere:"Espagnol", q:"Que veut dire « el libro » ?",
+    choix:["le stylo","le livre","le sac","le cahier"], bonne:1,
+    expl:"« el libro » = le livre." },
+  { matiere:"Espagnol", q:"Comment dit-on « la famille » en espagnol ?",
+    choix:["la familia","la casa","la comida","la fiesta"], bonne:0,
+    expl:"« la familia » = la famille." },
+  { matiere:"Espagnol", q:"La couleur « azul » est :",
+    choix:["le rouge","le bleu","le vert","le blanc"], bonne:1,
+    expl:"« azul » = bleu." },
+
+  // ---------- SVT ----------
+  { matiere:"SVT", q:"Quel organe fait circuler le sang dans tout le corps ?",
+    choix:["Le foie","Le cœur","L'estomac","Le cerveau"], bonne:1,
+    expl:"Le cœur est une pompe qui fait circuler le sang." },
+  { matiere:"SVT", q:"Quel gaz les plantes absorbent-elles pour la photosynthèse ?",
+    choix:["L'oxygène","Le dioxyde de carbone","L'azote","L'hydrogène"], bonne:1,
+    expl:"Les plantes absorbent le dioxyde de carbone (CO₂) et rejettent de l'oxygène." },
+  { matiere:"SVT", q:"Par quels organes l'air entre-t-il quand on respire ?",
+    choix:["Les poumons","Le cœur","Les reins","L'estomac"], bonne:0,
+    expl:"L'air entre dans les poumons, où l'oxygène passe dans le sang." },
+  { matiere:"SVT", q:"Où commence la digestion des aliments ?",
+    choix:["Dans l'estomac","Dans la bouche","Dans l'intestin","Dans le foie"], bonne:1,
+    expl:"La digestion commence dans la bouche, avec les dents et la salive." },
+  { matiere:"SVT", q:"Quel aliment est une bonne source de calcium ?",
+    choix:["Les bonbons","Le lait","Les frites","Le soda"], bonne:1,
+    expl:"Le lait et les produits laitiers sont riches en calcium, bon pour les os." },
+  // ⏸️ Volcans & séismes : chapitre pas encore vu en classe.
+  //    Enlève les /*  et  */ ci-dessous pour réactiver ces questions plus tard !
+  /*
+  { matiere:"SVT", q:"Une montagne qui peut cracher de la lave est un :",
+    choix:["séisme","volcan","glacier","geyser"], bonne:1,
+    expl:"Un volcan peut entrer en éruption et rejeter de la lave et des cendres." },
+  { matiere:"SVT", q:"Un tremblement de terre s'appelle aussi un :",
+    choix:["séisme","tsunami","cyclone","orage"], bonne:0,
+    expl:"Un tremblement de terre est aussi appelé un séisme." },
+  */
+  { matiere:"SVT", q:"Quel gaz notre corps rejette-t-il surtout quand on expire ?",
+    choix:["Le dioxygène","Le dioxyde de carbone","L'azote","L'hélium"], bonne:1,
+    expl:"En expirant, on rejette du dioxyde de carbone (CO₂) ; en inspirant, on prend du dioxygène." },
+  { matiere:"SVT", q:"Quelle période transforme peu à peu le corps d'un enfant en corps d'adulte ?",
+    choix:["La puberté","La digestion","La respiration","La photosynthèse"], bonne:0,
+    expl:"La puberté est la période de transformations du corps vers l'âge adulte." },
+  { matiere:"SVT", q:"Quelle partie de la plante absorbe l'eau dans le sol ?",
+    choix:["Les feuilles","Les fleurs","Les racines","La tige"], bonne:2,
+    expl:"Les racines absorbent l'eau et les sels minéraux du sol." },
+  { matiere:"SVT", q:"Combien de dents possède en général un adulte ?",
+    choix:["20","28","32","36"], bonne:2,
+    expl:"Un adulte a normalement 32 dents (dents de sagesse comprises)." },
+  { matiere:"SVT", q:"Quel organe filtre le sang et fabrique l'urine ?",
+    choix:["Le foie","Les reins","Les poumons","Le cœur"], bonne:1,
+    expl:"Les reins filtrent le sang et produisent l'urine." },
+  { matiere:"SVT", q:"Dans quels « tuyaux » le sang circule-t-il dans le corps ?",
+    choix:["les vaisseaux sanguins","les os","les nerfs","les muscles"], bonne:0,
+    expl:"Le sang circule dans les vaisseaux sanguins (artères, veines, capillaires)." },
+  { matiere:"SVT", q:"Quel organe commande le corps et permet de réfléchir ?",
+    choix:["le cœur","le cerveau","l'estomac","le foie"], bonne:1,
+    expl:"Le cerveau commande le corps et permet de penser." },
+  { matiere:"SVT", q:"Après la bouche, dans quel organe les aliments sont-ils digérés ?",
+    choix:["les poumons","l'estomac","le cœur","les reins"], bonne:1,
+    expl:"Les aliments passent dans l'estomac, puis dans l'intestin, où ils sont digérés." },
+  { matiere:"SVT", q:"Pour rester en bonne santé, il faut une alimentation :",
+    choix:["uniquement sucrée","équilibrée et variée","sans aucun légume","uniquement grasse"], bonne:1,
+    expl:"Une alimentation équilibrée et variée apporte tout ce dont le corps a besoin." },
+  { matiere:"SVT", q:"À quoi servent les muscles ?",
+    choix:["à digérer","à bouger (faire des mouvements)","à respirer tout seuls","à réfléchir"], bonne:1,
+    expl:"Les muscles se contractent et tirent sur les os : ils permettent les mouvements." },
+  { matiere:"SVT", q:"Quel gaz, présent dans l'air, est utile au corps quand on respire ?",
+    choix:["le dioxyde de carbone","le dioxygène","l'hélium","le méthane"], bonne:1,
+    expl:"On respire pour apporter du dioxygène (O₂) à notre corps." },
+  { matiere:"SVT", q:"Une chenille se transforme peu à peu en :",
+    choix:["papillon","poisson","grenouille","oiseau"], bonne:0,
+    expl:"La chenille subit une métamorphose et devient un papillon." },
+  { matiere:"SVT", q:"Chez une plante à fleurs, qu'est-ce qui se forme après la fleur et contient les graines ?",
+    choix:["la racine","le fruit","la feuille","la tige"], bonne:1,
+    expl:"Après la fleur (et la pollinisation), il se forme un fruit qui contient les graines." },
+  { matiere:"SVT", q:"Quel est le rôle principal du squelette ?",
+    choix:["digérer les aliments","soutenir et protéger le corps","fabriquer l'urine","respirer"], bonne:1,
+    expl:"Le squelette soutient le corps et protège les organes (crâne, cage thoracique…)." },
+  { matiere:"SVT", q:"Quels aliments sont les plus riches en vitamines ?",
+    choix:["les bonbons","les fruits et légumes","les chips","les sodas"], bonne:1,
+    expl:"Les fruits et les légumes apportent beaucoup de vitamines, utiles pour la santé." },
+
+  // ---------- PHYSIQUE-CHIMIE ----------
+  { matiere:"Physique-Chimie", q:"À quelle température l'eau bout-elle (au niveau de la mer) ?",
+    choix:["0 °C","50 °C","100 °C","200 °C"], bonne:2,
+    expl:"L'eau bout à 100 °C et gèle à 0 °C au niveau de la mer." },
+  { matiere:"Physique-Chimie", q:"L'eau à l'état solide, c'est :",
+    choix:["la vapeur","la glace","la pluie","la buée"], bonne:1,
+    expl:"À l'état solide, l'eau devient de la glace." },
+  { matiere:"Physique-Chimie", q:"Le passage de l'eau liquide à l'état gazeux s'appelle :",
+    choix:["la solidification","la vaporisation","la fusion","la condensation"], bonne:1,
+    expl:"Liquide → gaz : c'est la vaporisation (l'évaporation en est une forme lente)." },
+  { matiere:"Physique-Chimie", q:"Le passage de l'eau liquide à l'état solide s'appelle :",
+    choix:["la fusion","la solidification","l'évaporation","la condensation"], bonne:1,
+    expl:"Liquide → solide (en gelant) : c'est la solidification." },
+  { matiere:"Physique-Chimie", q:"Dans un circuit électrique, qu'est-ce qui fournit l'énergie ?",
+    choix:["La lampe","La pile","L'interrupteur","Le fil"], bonne:1,
+    expl:"La pile (ou le générateur) fournit l'énergie au circuit." },
+  { matiere:"Physique-Chimie", q:"Un matériau qui laisse passer le courant électrique est :",
+    choix:["un isolant","un conducteur","un aimant","un solide"], bonne:1,
+    expl:"Les métaux sont des conducteurs : ils laissent passer le courant." },
+  { matiere:"Physique-Chimie", q:"Le plastique et le bois sont des :",
+    choix:["conducteurs","isolants","métaux","liquides"], bonne:1,
+    expl:"Le plastique et le bois ne laissent pas passer le courant : ce sont des isolants." },
+  // ⏸️ Lumière & ombres : chapitre pas encore vu en classe.
+  //    Enlève les /*  et  */ ci-dessous pour réactiver cette question plus tard !
+  /*
+  { matiere:"Physique-Chimie", q:"Quelle est une source de lumière naturelle ?",
+    choix:["La lampe","La bougie","Le Soleil","L'écran"], bonne:2,
+    expl:"Le Soleil est une source de lumière naturelle ; la lampe est artificielle." },
+  */
+  { matiere:"Physique-Chimie", q:"Un mélange où l'on voit encore les éléments (eau + sable) est dit :",
+    choix:["homogène","hétérogène","liquide","pur"], bonne:1,
+    expl:"Si on distingue les éléments, le mélange est hétérogène ; s'ils se mélangent totalement (eau + sel), il est homogène." },
+  { matiere:"Physique-Chimie", q:"Quand on mélange de l'eau et du sel, le sel :",
+    choix:["se dissout","flotte","disparaît vraiment","devient solide"], bonne:0,
+    expl:"Le sel se dissout dans l'eau : on obtient un mélange homogène (l'eau salée)." },
+  { matiere:"Physique-Chimie", q:"Combien la Terre a-t-elle de satellite naturel ?",
+    choix:["Aucun","1 (la Lune)","2","8"], bonne:1,
+    expl:"La Terre a un seul satellite naturel : la Lune." },
+  { matiere:"Physique-Chimie", q:"À quelle température l'eau gèle-t-elle ?",
+    choix:["0 °C","10 °C","100 °C","-100 °C"], bonne:0,
+    expl:"L'eau gèle (passe à l'état solide) à 0 °C." },
+  { matiere:"Physique-Chimie", q:"Quand la glace fond, le passage solide → liquide s'appelle :",
+    choix:["la fusion","la solidification","la vaporisation","la condensation"], bonne:0,
+    expl:"Solide → liquide : c'est la fusion (la glace fond et devient de l'eau)." },
+  { matiere:"Physique-Chimie", q:"Quelle unité utilise-t-on pour mesurer une masse ?",
+    choix:["le litre","le gramme","le mètre","le degré"], bonne:1,
+    expl:"La masse se mesure en grammes (g) et en kilogrammes (kg)." },
+  { matiere:"Physique-Chimie", q:"Avec quel appareil mesure-t-on un volume de liquide ?",
+    choix:["une règle","une éprouvette graduée","une balance","un thermomètre"], bonne:1,
+    expl:"On mesure un volume de liquide avec une éprouvette graduée." },
+  { matiere:"Physique-Chimie", q:"Avec quel appareil mesure-t-on une masse ?",
+    choix:["une balance","une règle","un chronomètre","une boussole"], bonne:0,
+    expl:"On mesure une masse avec une balance." },
+  { matiere:"Physique-Chimie", q:"Dans un circuit, quel élément ouvre ou ferme le passage du courant ?",
+    choix:["la pile","l'interrupteur","la lampe","le fil"], bonne:1,
+    expl:"L'interrupteur ouvre (coupe) ou ferme le circuit." },
+  { matiere:"Physique-Chimie", q:"Que se passe-t-il quand on ouvre l'interrupteur d'un circuit ?",
+    choix:["la lampe s'éteint","la lampe brille plus fort","la pile explose","rien du tout"], bonne:0,
+    expl:"Circuit ouvert = le courant ne passe plus, donc la lampe s'éteint." },
+  { matiere:"Physique-Chimie", q:"L'eau, l'huile et le sirop sont des :",
+    choix:["solides","liquides","gaz","métaux"], bonne:1,
+    expl:"L'eau, l'huile et le sirop coulent et prennent la forme du récipient : ce sont des liquides." },
+  { matiere:"Physique-Chimie", q:"Quel matériau est attiré par un aimant ?",
+    choix:["le plastique","le fer","le bois","le verre"], bonne:1,
+    expl:"Le fer (et certains métaux) est attiré par un aimant ; le plastique, le bois et le verre ne le sont pas." },
+  { matiere:"Physique-Chimie", q:"Quand on chauffe très fort de l'eau, elle se transforme en :",
+    choix:["glace","vapeur d'eau","sel","métal"], bonne:1,
+    expl:"En chauffant, l'eau liquide se transforme en vapeur d'eau (un gaz) : c'est la vaporisation." },
+
+  // ---------- TECHNOLOGIE ----------
+  { matiere:"Technologie", q:"Que signifie « www » dans une adresse internet ?",
+    choix:["World Wide Web","Windows Web Work","Web World Wide","Wide World Web"], bonne:0,
+    expl:"« www » veut dire World Wide Web, la « toile » mondiale." },
+  { matiere:"Technologie", q:"Quel petit objet permet de transporter des fichiers numériques ?",
+    choix:["Une clé USB","Une souris","Un écran","Un clavier"], bonne:0,
+    expl:"La clé USB sert à stocker et transporter des fichiers." },
+  { matiere:"Technologie", q:"Quel composant est le « cerveau » de l'ordinateur ?",
+    choix:["L'écran","Le processeur","Le clavier","La souris"], bonne:1,
+    expl:"Le processeur effectue les calculs : c'est le cerveau de l'ordinateur." },
+  { matiere:"Technologie", q:"Une suite d'instructions à suivre dans l'ordre s'appelle :",
+    choix:["un algorithme","un pixel","un fichier","un écran"], bonne:0,
+    expl:"Un algorithme est une suite d'étapes pour résoudre un problème." },
+  { matiere:"Technologie", q:"Quel logiciel de blocs sert à apprendre à programmer ?",
+    choix:["Word","Scratch","Excel","Paint"], bonne:1,
+    expl:"Scratch permet de programmer en assemblant des blocs colorés." },
+  { matiere:"Technologie", q:"Un objet technique est conçu pour répondre à un :",
+    choix:["besoin","hasard","jeu","problème impossible"], bonne:0,
+    expl:"Tout objet technique est inventé pour répondre à un besoin de l'utilisateur." },
+  { matiere:"Technologie", q:"Une éolienne transforme le vent en :",
+    choix:["chaleur","électricité","eau","lumière"], bonne:1,
+    expl:"L'éolienne transforme l'énergie du vent en électricité." },
+  { matiere:"Technologie", q:"Que permet de faire le recyclage ?",
+    choix:["Jeter plus","Réutiliser les matériaux","Polluer plus","Casser les objets"], bonne:1,
+    expl:"Le recyclage permet de réutiliser les matériaux et de réduire les déchets." },
+  { matiere:"Technologie", q:"Sur quel élément l'ordinateur affiche-t-il les informations ?",
+    choix:["Le clavier","L'écran","La souris","L'imprimante"], bonne:1,
+    expl:"L'écran affiche les informations à l'utilisateur." },
+  { matiere:"Technologie", q:"Quel matériau très solide utilise-t-on pour construire un pont ?",
+    choix:["Le papier","Le tissu","L'acier","Le carton"], bonne:2,
+    expl:"On utilise l'acier (et le béton), très résistants, pour les grands ouvrages." },
+  { matiere:"Technologie", q:"Quel appareil sert à imprimer un document sur papier ?",
+    choix:["Le scanner","L'imprimante","Le clavier","La souris"], bonne:1,
+    expl:"L'imprimante met sur papier ce qui est affiché sur l'ordinateur." },
+  { matiere:"Technologie", q:"À quoi sert principalement le clavier d'un ordinateur ?",
+    choix:["à écrire du texte","à imprimer","à écouter de la musique","à éteindre l'écran"], bonne:0,
+    expl:"Le clavier sert à saisir (taper) du texte et des commandes." },
+  { matiere:"Technologie", q:"Un robot est une machine que l'on peut :",
+    choix:["programmer","manger","planter","arroser"], bonne:0,
+    expl:"Un robot suit un programme : on peut le programmer pour qu'il réalise des tâches." },
+  { matiere:"Technologie", q:"Lequel est un moteur de recherche sur Internet ?",
+    choix:["Google","Word","Paint","Excel"], bonne:0,
+    expl:"Google est un moteur de recherche : il aide à trouver des informations sur le Web." },
+  { matiere:"Technologie", q:"Qu'est-ce qui protège un ordinateur contre les virus ?",
+    choix:["un antivirus","un aimant","une imprimante","un haut-parleur"], bonne:0,
+    expl:"Un logiciel antivirus protège l'ordinateur contre les programmes dangereux." },
+  { matiere:"Technologie", q:"Quel matériau transparent utilise-t-on pour les fenêtres ?",
+    choix:["le bois","le verre","l'acier","le tissu"], bonne:1,
+    expl:"Le verre est transparent : il laisse passer la lumière, parfait pour une fenêtre." },
+  { matiere:"Technologie", q:"À partir de quoi fabrique-t-on la plupart des plastiques ?",
+    choix:["du bois","du pétrole","du sable","de l'eau"], bonne:1,
+    expl:"La plupart des plastiques sont fabriqués à partir du pétrole." },
+  { matiere:"Technologie", q:"Un barrage hydraulique (avec de l'eau) produit de :",
+    choix:["la chaleur","l'électricité","l'essence","le gaz"], bonne:1,
+    expl:"L'eau qui s'écoule fait tourner des turbines : le barrage produit de l'électricité." },
+  { matiere:"Technologie", q:"Pour ranger ses fichiers dans un ordinateur, on les met dans des :",
+    choix:["dossiers","tiroirs","cartons","valises"], bonne:0,
+    expl:"On organise les fichiers dans des dossiers (et des sous-dossiers)." },
+  { matiere:"Technologie", q:"En quoi mesure-t-on la taille d'un fichier (Ko, Mo, Go) ?",
+    choix:["en octets","en mètres","en degrés","en litres"], bonne:0,
+    expl:"La taille d'un fichier se mesure en octets (Ko = kilo-octets, Mo, Go…)." },
+
+  // ---------- ÉDUCATION MUSICALE ----------
+  { matiere:"Éducation musicale", q:"Combien y a-t-il de notes (do, ré, mi…) dans la gamme ?",
+    choix:["5","6","7","8"], bonne:2,
+    expl:"Il y a 7 notes : do, ré, mi, fa, sol, la, si." },
+  { matiere:"Éducation musicale", q:"Quel instrument a des touches noires et blanches ?",
+    choix:["La guitare","Le piano","Le violon","La flûte"], bonne:1,
+    expl:"Le piano possède des touches noires et blanches." },
+  { matiere:"Éducation musicale", q:"En musique, le « tempo » désigne :",
+    choix:["la vitesse du morceau","le volume","les paroles","l'instrument"], bonne:0,
+    expl:"Le tempo, c'est la vitesse (rapide ou lente) d'un morceau." },
+  { matiere:"Éducation musicale", q:"Qui dirige un orchestre ?",
+    choix:["Le chanteur","Le chef d'orchestre","Le pianiste","Le public"], bonne:1,
+    expl:"Le chef d'orchestre dirige tous les musiciens avec sa baguette." },
+  { matiere:"Éducation musicale", q:"La nuance « forte » signifie qu'il faut jouer :",
+    choix:["doucement","fort","vite","lentement"], bonne:1,
+    expl:"« forte » veut dire fort ; « piano » veut dire doucement." },
+  { matiere:"Éducation musicale", q:"Quel instrument se joue avec un archet ?",
+    choix:["Le violon","La trompette","Le tambour","Le piano"], bonne:0,
+    expl:"Le violon se joue en frottant les cordes avec un archet." },
+  { matiere:"Éducation musicale", q:"Quelle est la voix la plus aiguë chez la femme ?",
+    choix:["Alto","Soprano","Ténor","Basse"], bonne:1,
+    expl:"La soprano est la voix de femme la plus aiguë." },
+  { matiere:"Éducation musicale", q:"Si une blanche dure 2 temps, combien dure une noire ?",
+    choix:["1 temps","2 temps","4 temps","½ temps"], bonne:0,
+    expl:"Une noire dure 1 temps, soit deux fois moins qu'une blanche." },
+  { matiere:"Éducation musicale", q:"Lequel de ces instruments est un instrument à vent ?",
+    choix:["Le violon","La flûte","Le piano","Le tambour"], bonne:1,
+    expl:"On souffle dans la flûte : c'est un instrument à vent." },
+  { matiere:"Éducation musicale", q:"En musique, un « silence » indique :",
+    choix:["de jouer plus fort","une pause (on ne joue pas)","de jouer plus vite","la fin du morceau"], bonne:1,
+    expl:"Un silence est une pause : on ne joue aucune note pendant ce temps." },
+  { matiere:"Éducation musicale", q:"La nuance « piano » signifie qu'il faut jouer :",
+    choix:["fort","doucement","vite","lentement"], bonne:1,
+    expl:"« piano » veut dire doucement (faible) ; « forte » veut dire fort." },
+  { matiere:"Éducation musicale", q:"Lequel de ces instruments est une percussion ?",
+    choix:["le violon","le tambour","la flûte","la trompette"], bonne:1,
+    expl:"On frappe le tambour pour produire le son : c'est une percussion." },
+  { matiere:"Éducation musicale", q:"La trompette est un instrument à :",
+    choix:["cordes","vent","percussion","touches"], bonne:1,
+    expl:"On souffle dans la trompette : c'est un instrument à vent (cuivre)." },
+  { matiere:"Éducation musicale", q:"La guitare est un instrument à :",
+    choix:["vent","cordes","percussion","clavier"], bonne:1,
+    expl:"On pince ou gratte les cordes de la guitare : c'est un instrument à cordes." },
+  { matiere:"Éducation musicale", q:"Quel signe placé au début de la portée permet de lire les notes ?",
+    choix:["la clé de sol","la barre de mesure","le silence","la noire"], bonne:0,
+    expl:"La clé (souvent la clé de sol) se place au début de la portée pour nommer les notes." },
+  { matiere:"Éducation musicale", q:"Combien de lignes compte une portée musicale ?",
+    choix:["4","5","6","7"], bonne:1,
+    expl:"Une portée est faite de 5 lignes (et 4 interlignes)." },
+  { matiere:"Éducation musicale", q:"Un morceau joué très vite a un tempo :",
+    choix:["lent","rapide","silencieux","doux"], bonne:1,
+    expl:"Le tempo est la vitesse : très vite = tempo rapide." },
+  { matiere:"Éducation musicale", q:"Chanter à plusieurs la même chanson, c'est chanter en :",
+    choix:["chorale","solo","silence","dansant"], bonne:0,
+    expl:"Un groupe qui chante ensemble forme une chorale (un chœur)." },
+  { matiere:"Éducation musicale", q:"Quelle est la voix d'homme la plus grave ?",
+    choix:["soprano","alto","ténor","basse"], bonne:3,
+    expl:"La basse est la voix d'homme la plus grave ; la soprano est la voix de femme la plus aiguë." },
+  { matiere:"Éducation musicale", q:"Dans une chanson, le « refrain » est la partie qui :",
+    choix:["revient plusieurs fois","ne se chante qu'une fois","est toujours triste","se joue sans voix"], bonne:0,
+    expl:"Le refrain est la partie qui revient plusieurs fois entre les couplets." },
+];
+
+/* -----------------------------------------------------------
+   1bis) LES DÉFIS DU JOUR
+   Des questions plus difficiles, de niveau 4ème (l'année prochaine).
+   Le jeu en choisit UNE par jour. Même format que les questions normales.
+   ----------------------------------------------------------- */
+const DEFIS = [
+  { matiere:"Maths", q:"Combien font (-4) × (-5) ?",
+    choix:["-20","20","-9","9"], bonne:1,
+    expl:"En 4ème : « moins par moins donne plus ». 4 × 5 = 20, donc (-4) × (-5) = 20." },
+  { matiere:"Maths", q:"Combien font (-12) ÷ (-3) ?",
+    choix:["4","-4","-36","15"], bonne:0,
+    expl:"Deux nombres négatifs : le résultat est positif. 12 ÷ 3 = 4." },
+  { matiere:"Maths", q:"Quelle est la valeur de 7² (7 au carré) ?",
+    choix:["14","49","21","77"], bonne:1,
+    expl:"7² = 7 × 7 = 49." },
+  { matiere:"Maths", q:"Combien vaut 2³ (2 puissance 3) ?",
+    choix:["6","8","9","23"], bonne:1,
+    expl:"2³ = 2 × 2 × 2 = 8." },
+  { matiere:"Maths", q:"Développe : 3(x + 2) = ?",
+    choix:["3x + 2","3x + 6","x + 6","5x"], bonne:1,
+    expl:"On distribue le 3 : 3 × x + 3 × 2 = 3x + 6." },
+  { matiere:"Maths", q:"Théorème de Pythagore : dans un triangle rectangle, le carré de l'hypoténuse est égal à…",
+    choix:["la somme des deux côtés","la somme des carrés des deux autres côtés","la moitié du périmètre","l'aire du triangle"], bonne:1,
+    expl:"Pythagore : (hypoténuse)² = (côté 1)² + (côté 2)²." },
+  { matiere:"Maths", q:"Résous l'équation : x + 5 = 12. Que vaut x ?",
+    choix:["5","7","17","12"], bonne:1,
+    expl:"On enlève 5 des deux côtés : x = 12 − 5 = 7." },
+  { matiere:"Maths", q:"Un article à 50 € a une réduction de 20 %. Tu paies :",
+    choix:["30 €","40 €","45 €","48 €"], bonne:1,
+    expl:"20 % de 50 = 10 €. Donc 50 − 10 = 40 €." },
+  { matiere:"Français", q:"Dans « qu'il fasse beau », le verbe « fasse » est au mode :",
+    choix:["indicatif","subjonctif","impératif","conditionnel"], bonne:1,
+    expl:"Après « que » exprimant un souhait, on emploie le subjonctif : qu'il fasse." },
+  { matiere:"Français", q:"« Cet homme est un lion » (sans le mot « comme ») est une :",
+    choix:["comparaison","métaphore","hyperbole","périphrase"], bonne:1,
+    expl:"Sans outil de comparaison (« comme »), c'est une métaphore." },
+  { matiere:"Français", q:"« Je meurs de faim ! » est une exagération appelée :",
+    choix:["litote","hyperbole","métaphore","comparaison"], bonne:1,
+    expl:"Une exagération volontaire est une hyperbole." },
+  { matiere:"Histoire-Géo", q:"En quelle année commence la Révolution française ?",
+    choix:["1515","1789","1804","1914"], bonne:1,
+    expl:"La Révolution française commence en 1789 (prise de la Bastille le 14 juillet)." },
+  { matiere:"Histoire-Géo", q:"Le mouvement d'idées du XVIIIe siècle qui défend la raison et la liberté s'appelle :",
+    choix:["la Renaissance","les Lumières","le Romantisme","la Réforme"], bonne:1,
+    expl:"Les philosophes des Lumières (Voltaire, Rousseau…) défendent la raison et la liberté." },
+  { matiere:"Histoire-Géo", q:"Quelle invention, améliorée par James Watt, lance la révolution industrielle ?",
+    choix:["l'ampoule","la machine à vapeur","le téléphone","l'avion"], bonne:1,
+    expl:"La machine à vapeur permet de faire fonctionner usines, trains et bateaux au XIXe siècle." },
+  { matiere:"Anglais", q:"« I have ___ my keys. » (present perfect de « lose »)",
+    choix:["lose","losed","lost","losing"], bonne:2,
+    expl:"« lose » est irrégulier : have + lost (participe passé). I have lost my keys." },
+  { matiere:"Anglais", q:"Quel est le comparatif de « good » ?",
+    choix:["gooder","more good","better","best"], bonne:2,
+    expl:"« good » est irrégulier : son comparatif est better (meilleur)." },
+  { matiere:"Anglais", q:"« She is taller ___ me. » Quel mot complète la phrase ?",
+    choix:["that","than","then","as"], bonne:1,
+    expl:"Pour comparer, on utilise « than » : taller than me (plus grande que moi)." },
+  { matiere:"Physique-Chimie", q:"Quelle est la formule chimique de l'eau ?",
+    choix:["O₂","CO₂","H₂O","NaCl"], bonne:2,
+    expl:"L'eau est faite de 2 atomes d'hydrogène et 1 d'oxygène : H₂O." },
+  { matiere:"Physique-Chimie", q:"Pour qu'une combustion ait lieu, il faut un combustible et un gaz appelé :",
+    choix:["le dioxygène","le dioxyde de carbone","l'azote","l'hélium"], bonne:0,
+    expl:"La combustion a besoin de dioxygène (O₂), le comburant présent dans l'air." },
+  { matiere:"SVT", q:"Le déplacement lent des grandes plaques de la surface de la Terre s'appelle la tectonique des :",
+    choix:["roches","plaques","océans","volcans"], bonne:1,
+    expl:"La tectonique des plaques explique les séismes, volcans et le relief de la Terre." },
+  { matiere:"SVT", q:"Quelle est la cellule reproductrice mâle chez l'être humain ?",
+    choix:["l'ovule","le spermatozoïde","le neurone","le globule rouge"], bonne:1,
+    expl:"La cellule reproductrice mâle est le spermatozoïde ; la femelle est l'ovule." },
+];
+
+/* -----------------------------------------------------------
+   1ter) LES RÉDACTIONS DU JOUR (un sujet d'écriture par jour)
+   ----------------------------------------------------------- */
+const REDACTIONS = [
+  { sujet:"Raconte un souvenir de vacances qui t'a marqué(e).",
+    conseil:"Écris au moins 10 lignes, au passé, en racontant dans l'ordre ce qui s'est passé." },
+  { sujet:"Imagine que tu te réveilles un matin avec un super-pouvoir. Raconte ta journée.",
+    conseil:"Choisis un seul pouvoir et montre comment il change ta journée, du matin au soir." },
+  { sujet:"Décris ton animal préféré (réel ou imaginaire) : son apparence et son caractère.",
+    conseil:"Utilise beaucoup d'adjectifs et organise ton texte : d'abord le physique, puis le caractère." },
+  { sujet:"Écris la suite de ce conte : « Il était une fois un dragon qui ne savait pas cracher de feu… »",
+    conseil:"Invente un problème puis une solution. Pense à un début, un milieu et une fin." },
+  { sujet:"Raconte une journée vue par les yeux de ton animal de compagnie (ou d'un animal de ton choix).",
+    conseil:"Écris à la première personne (« je ») comme si tu étais l'animal." },
+  { sujet:"Décris ton endroit préféré et explique pourquoi tu t'y sens bien.",
+    conseil:"Fais appel aux 5 sens : ce qu'on voit, entend, sent, touche, goûte." },
+  { sujet:"Invente une aventure dans laquelle tu explores une grotte mystérieuse.",
+    conseil:"Crée du suspense ! Décris l'entrée, ce que tu découvres, et comment ça se termine." },
+  { sujet:"Si tu pouvais voyager dans le temps, à quelle époque irais-tu ? Raconte.",
+    conseil:"Explique pourquoi cette époque, puis raconte ce que tu y vis et qui tu rencontres." },
+  { sujet:"Raconte un moment où tu as eu très peur, puis comment tu t'es rassuré(e).",
+    conseil:"Montre tes émotions : ton cœur qui bat, tes pensées… puis le retour au calme." },
+  { sujet:"Écris une lettre à toi-même dans dix ans.",
+    conseil:"Respecte la forme d'une lettre : « Cher moi du futur, … », des questions, une signature." },
+  { sujet:"Imagine une ville du futur et décris comment on y vit.",
+    conseil:"Pense aux transports, aux maisons, à l'école… Sois inventif/inventive mais reste clair(e)." },
+  { sujet:"Raconte une dispute avec un(e) ami(e) et comment vous vous êtes réconciliés.",
+    conseil:"Explique la cause de la dispute, les paroles échangées, puis la réconciliation." },
+  { sujet:"Décris ton plat préféré pour donner envie de le goûter.",
+    conseil:"Décris les couleurs, les odeurs et le goût. Utilise des mots gourmands !" },
+  { sujet:"Invente un héros ou une héroïne et présente-le/la (nom, pouvoirs, mission).",
+    conseil:"Donne-lui un nom, une apparence, une qualité, un défaut et une grande mission." },
+  { sujet:"Raconte ce que tu ferais si tu étais invisible pendant une journée.",
+    conseil:"Choisis 3 ou 4 moments amusants ou utiles de ta journée d'invisibilité." },
+  { sujet:"Présente ta saison préférée et explique pourquoi tu l'aimes.",
+    conseil:"Parle de la météo, des activités, des fêtes et des sensations de cette saison." },
+  { sujet:"Imagine que les animaux peuvent parler. Raconte ta conversation avec l'un d'eux.",
+    conseil:"Pense à mettre des tirets pour le dialogue : « — Bonjour, dit le chat. »" },
+  { sujet:"Raconte une belle action que tu as faite, ou que tu aimerais faire, pour quelqu'un.",
+    conseil:"Explique la situation, ton geste, et ce que la personne a ressenti." },
+];
+
+/* -----------------------------------------------------------
+   1quater) LES DICTÉES DU JOUR (le jeu lit le texte à voix haute)
+   ----------------------------------------------------------- */
+const DICTEES = [
+  "Le matin, les oiseaux chantent dans le grand jardin. Les enfants jouent sous les arbres pendant que leurs parents préparent le pique-nique.",
+  "L'hiver est arrivé. La neige recouvre les toits des maisons et les rues sont silencieuses. Les chats se cachent près de la cheminée pour se réchauffer.",
+  "Pendant les vacances, nous sommes allés à la mer. Les vagues étaient hautes et l'eau était froide. Nous avons ramassé des coquillages sur la plage.",
+  "Le vieux château se dresse au sommet de la colline. Ses murs sont couverts de lierre et ses fenêtres sont cassées. Personne n'ose y entrer la nuit.",
+  "Ma grand-mère prépare une délicieuse tarte aux pommes. La cuisine sent bon le sucre et la cannelle. J'attends avec impatience de la goûter.",
+  "Les élèves écoutent attentivement leur professeur. Ils prennent des notes dans leur cahier et lèvent la main pour poser des questions.",
+  "Un petit renard roux traverse la forêt. Il cherche de la nourriture pour ses petits qui l'attendent dans le terrier. Le soleil se couche doucement.",
+  "Hier, il a plu toute la journée. Les flaques d'eau brillaient sur le trottoir et les passants ouvraient leurs parapluies. Le ciel était gris.",
+  "Le marchand vend des fruits et des légumes sur le marché. Les tomates sont rouges, les bananes sont jaunes et les pommes sont bien vertes.",
+  "Nous avons visité un musée magnifique. Les tableaux racontaient des histoires anciennes et les statues semblaient nous regarder.",
+  "Le chien de mon voisin aboie dès qu'il entend un bruit. Il garde la maison jour et nuit. Pourtant, il est très gentil avec les enfants.",
+  "Au printemps, les fleurs s'ouvrent dans les prairies. Les abeilles butinent de fleur en fleur pour fabriquer leur miel. La nature se réveille.",
+  "Le capitaine du navire observe l'horizon. La tempête approche et les marins se préparent. Les vagues frappent la coque avec violence.",
+  "Chaque samedi, je vais à la bibliothèque avec ma sœur. Nous empruntons des livres d'aventures et des bandes dessinées. Lire est notre passion.",
+  "Les pompiers sont arrivés rapidement pour éteindre l'incendie. Grâce à leur courage, personne n'a été blessé. Les habitants les ont remerciés.",
+  "Le boulanger se lève très tôt pour préparer le pain. L'odeur des croissants chauds remplit la boutique. Les premiers clients arrivent en souriant.",
+];
+
+/* -----------------------------------------------------------
+   2) VARIABLES DE LA PARTIE EN COURS
+   ----------------------------------------------------------- */
+let questionsDuTour = [];   // les questions de la matière choisie, mélangées
+let indexActuel = 0;        // numéro de la question affichée
+let score = 0;
+let vies = 3;
+let viesMax = 3;            // nombre de vies au départ (augmente avec les récompenses)
+let xpGagneTour = 0;        // XP gagnés pendant la partie en cours
+let defiActuel = null;      // la question « défi du jour » en cours
+
+/* Petits raccourcis pour récupérer les éléments HTML */
+const $ = (id) => document.getElementById(id);
+
+/* -----------------------------------------------------------
+   2bis) PROGRESSION DU JOUEUR (XP, niveau, récompenses)
+   Sauvegardée dans le navigateur (localStorage) pour ne pas
+   être perdue quand on ferme le jeu.
+   ----------------------------------------------------------- */
+let etat = chargerEtat();
+let fileNiveaux = [];       // récompenses à montrer une par une
+
+function etatParDefaut() {
+  return { xp: 0, niveau: 1, niveauxDebloques: [], bonusVies: 0, theme: "defaut", defiTenteLe: 0 };
+}
+function chargerEtat() {
+  try {
+    const sauv = localStorage.getItem("quiz4eme_etat");
+    return sauv ? JSON.parse(sauv) : etatParDefaut();
+  } catch (e) { return etatParDefaut(); }
+}
+function sauverEtat() {
+  try { localStorage.setItem("quiz4eme_etat", JSON.stringify(etat)); } catch (e) {}
+}
+
+/* XP nécessaires pour passer du niveau actuel au suivant.
+   Le niveau 1 est un peu plus dur (150), puis : 300, 600, 1000, 1500… */
+function xpPourNiveau(niveau) {
+  if (niveau === 1) return 150;          // 1er niveau un peu plus long à atteindre
+  return 50 * niveau * (niveau + 1);
+}
+
+/* Les récompenses débloquées à chaque niveau.
+   - emoji / nom / desc : ce qui s'affiche dans la fenêtre de récompense
+   - bonusVie : true  => +1 vie au départ de chaque partie
+   - theme    : "nom" => nouveau thème de couleurs appliqué */
+const RECOMPENSES = {
+  2:  { emoji:"🌱", nom:"Apprenti",        desc:"Tu débutes super bien !" },
+  3:  { emoji:"❤️", nom:"Cœur bonus",      desc:"+1 vie au départ de chaque partie !", bonusVie:true },
+  4:  { emoji:"📘", nom:"Studieux",        desc:"Tu collectionnes les bonnes réponses." },
+  5:  { emoji:"🌊", nom:"Thème Océan",     desc:"Un nouveau thème de couleurs débloqué !", theme:"ocean" },
+  6:  { emoji:"🔥", nom:"En feu",          desc:"Rien ne t'arrête !" },
+  7:  { emoji:"❤️", nom:"Encore un cœur",  desc:"+1 vie au départ de chaque partie !", bonusVie:true },
+  8:  { emoji:"🌲", nom:"Thème Forêt",     desc:"Un nouveau thème de couleurs débloqué !", theme:"foret" },
+  9:  { emoji:"⭐", nom:"Étoile montante", desc:"Tu deviens un(e) pro de la révision." },
+  10: { emoji:"👑", nom:"Génie",           desc:"Niveau 10 ! Tu es un(e) crack 🏆" },
+  11: { emoji:"🌅", nom:"Thème Coucher",   desc:"Encore un thème de couleurs débloqué !", theme:"coucher" },
+};
+function recompensePourNiveau(niveau) {
+  return RECOMPENSES[niveau] || { emoji:"🏅", nom:"Champion(ne)", desc:"Encore un niveau de gagné !" };
+}
+
+/* Les thèmes de couleurs (récompenses visuelles) */
+const THEMES = {
+  defaut:  { fond1:"#6a5cff", fond2:"#a855f7", accent:"#ffb020" },
+  ocean:   { fond1:"#0ea5e9", fond2:"#2563eb", accent:"#38bdf8" },
+  foret:   { fond1:"#16a34a", fond2:"#15803d", accent:"#facc15" },
+  coucher: { fond1:"#f97316", fond2:"#db2777", accent:"#fde047" },
+};
+function appliquerTheme(nom) {
+  const t = THEMES[nom] || THEMES.defaut;
+  document.documentElement.style.setProperty("--fond1", t.fond1);
+  document.documentElement.style.setProperty("--fond2", t.fond2);
+  document.documentElement.style.setProperty("--accent", t.accent);
+}
+
+/* -----------------------------------------------------------
+   3) ÉCRAN D'ACCUEIL : créer un bouton par matière
+   ----------------------------------------------------------- */
+const COULEURS_MATIERES = {
+  "Maths":              { c:"#6366f1", e:"🔢" },
+  "Français":           { c:"#ec4899", e:"📖" },
+  "Histoire-Géo":       { c:"#f59e0b", e:"🏰" },
+  "Anglais":            { c:"#06b6d4", e:"🇬🇧" },
+  "Espagnol":           { c:"#ef4444", e:"🇪🇸" },
+  "SVT":                { c:"#22c55e", e:"🌱" },
+  "Physique-Chimie":    { c:"#8b5cf6", e:"⚗️" },
+  "Technologie":        { c:"#64748b", e:"🔧" },
+  "Éducation musicale": { c:"#f97316", e:"🎵" },
+};
+
+function construireAccueil() {
+  const conteneur = $("liste-matieres");
+  conteneur.innerHTML = "";
+  // On récupère la liste des matières uniques
+  const matieres = [...new Set(QUESTIONS.map(q => q.matiere))];
+  matieres.forEach(m => {
+    const style = COULEURS_MATIERES[m] || { c:"#6366f1", e:"❓" };
+    const btn = document.createElement("button");
+    btn.className = "matiere-btn";
+    btn.style.background = style.c;
+    btn.innerHTML = `<span class="emoji">${style.e}</span> ${m}`;
+    btn.onclick = () => demarrerPartie(m);
+    conteneur.appendChild(btn);
+  });
+  // Un bouton bonus : toutes les matières mélangées
+  const btnTout = document.createElement("button");
+  btnTout.className = "matiere-btn";
+  btnTout.style.background = "#1e1b3a";
+  btnTout.innerHTML = `<span class="emoji">🎲</span> Toutes les matières (mélange)`;
+  btnTout.onclick = () => demarrerPartie(null);
+  conteneur.appendChild(btnTout);
+}
+
+/* -----------------------------------------------------------
+   4) DÉMARRER UNE PARTIE
+   ----------------------------------------------------------- */
+function demarrerPartie(matiere) {
+  // On filtre les questions selon la matière (ou toutes si null)
+  let pool = matiere ? QUESTIONS.filter(q => q.matiere === matiere) : [...QUESTIONS];
+
+  // SÉLECTION DU JOUR : la graine dépend de la date, donc le lot de
+  // questions change automatiquement chaque jour.
+  const graine = numeroDuJour() + hashTexte(matiere || "toutes");
+  const lotDuJour = melangerAvecGraine(pool, graine).slice(0, 8); // 8 questions du jour
+  questionsDuTour = melanger(lotDuJour);  // ordre mélangé à chaque partie
+
+  indexActuel = 0;
+  score = 0;
+  viesMax = 3 + etat.bonusVies;   // vies de base + vies bonus gagnées
+  vies = viesMax;
+  xpGagneTour = 0;
+
+  $("info-matiere").textContent = matiere || "Mélange";
+  basculerEcran("ecran-jeu");
+  afficherQuestion();
+}
+
+/* Mélanger un tableau (ordre au hasard, différent à chaque partie) */
+function melanger(tableau) {
+  const t = [...tableau];
+  for (let i = t.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [t[i], t[j]] = [t[j], t[i]];
+  }
+  return t;
+}
+
+/* --- Outils pour changer les questions CHAQUE JOUR --- */
+
+/* Numéro du jour : un nombre du type 20260626 (année-mois-jour).
+   Il change à chaque nouvelle journée. */
+function numeroDuJour() {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+
+/* Transforme un texte (ex: "Maths") en nombre, pour que chaque
+   matière ait une sélection du jour différente des autres. */
+function hashTexte(txt) {
+  let h = 0;
+  for (let i = 0; i < txt.length; i++) h = (h * 31 + txt.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+/* Générateur de hasard "à graine" : avec la même graine, il donne
+   toujours la même suite de nombres (parfait pour une sélection du jour). */
+function hasardAvecGraine(graine) {
+  return function () {
+    graine = (graine + 0x6D2B79F5) | 0;
+    let t = Math.imul(graine ^ (graine >>> 15), 1 | graine);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* Mélange un tableau de façon REPRODUCTIBLE à partir d'une graine. */
+function melangerAvecGraine(tableau, graine) {
+  const t = [...tableau];
+  const rnd = hasardAvecGraine(graine);
+  for (let i = t.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [t[i], t[j]] = [t[j], t[i]];
+  }
+  return t;
+}
+
+/* -----------------------------------------------------------
+   5) AFFICHER UNE QUESTION
+   ----------------------------------------------------------- */
+function afficherQuestion() {
+  const q = questionsDuTour[indexActuel];
+
+  // Afficher la matière de CETTE question (très utile en mode mélange)
+  const styleMat = COULEURS_MATIERES[q.matiere] || { e:"❓" };
+  $("info-matiere").textContent = `${styleMat.e} ${q.matiere}`;
+
+  // Mettre à jour le haut de l'écran
+  $("score").textContent = score;
+  $("vies").textContent = "❤️".repeat(vies) + "🖤".repeat(viesMax - vies);
+  $("barre-prog").style.width = (indexActuel / questionsDuTour.length * 100) + "%";
+
+  // La question
+  $("texte-question").textContent = `(${indexActuel + 1}/${questionsDuTour.length}) ${q.q}`;
+
+  // Les réponses
+  const zone = $("liste-reponses");
+  zone.innerHTML = "";
+  q.choix.forEach((texte, i) => {
+    const btn = document.createElement("button");
+    btn.className = "reponse-btn";
+    btn.textContent = texte;
+    btn.onclick = () => repondre(i, btn);
+    zone.appendChild(btn);
+  });
+
+  // Cacher l'explication et le bouton suivant
+  $("explication").classList.remove("visible");
+  $("btn-suivant").classList.add("cache");
+}
+
+/* -----------------------------------------------------------
+   6) QUAND LE JOUEUR RÉPOND
+   ----------------------------------------------------------- */
+function repondre(choix, btnClique) {
+  const q = questionsDuTour[indexActuel];
+  const boutons = $("liste-reponses").querySelectorAll("button");
+
+  // On bloque tous les boutons pour éviter de cliquer deux fois
+  boutons.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.bonne) b.classList.add("bonne");      // on montre la bonne en vert
+  });
+
+  if (choix === q.bonne) {
+    score++;
+    xpGagneTour += 10;                                // +10 XP par bonne réponse
+  } else {
+    btnClique.classList.add("mauvaise");              // la mauvaise en rouge
+    vies--;
+  }
+
+  // Afficher l'explication
+  const exp = $("explication");
+  exp.innerHTML = `<strong>${choix === q.bonne ? "✅ Bravo !" : "❌ Presque !"}</strong> ${q.expl}`;
+  exp.classList.add("visible");
+
+  // Mettre à jour score et vies en haut
+  $("score").textContent = score;
+  $("vies").textContent = "❤️".repeat(Math.max(vies,0)) + "🖤".repeat(viesMax - Math.max(vies,0));
+
+  // Afficher le bouton suivant (ou finir si plus de vies)
+  const btnSuivant = $("btn-suivant");
+  btnSuivant.classList.remove("cache");
+  btnSuivant.textContent = (vies <= 0) ? "Voir le résultat →" : "Question suivante →";
+}
+
+/* -----------------------------------------------------------
+   7) PASSER À LA SUITE
+   ----------------------------------------------------------- */
+$("btn-suivant").onclick = () => {
+  indexActuel++;
+  if (vies <= 0 || indexActuel >= questionsDuTour.length) {
+    terminerPartie();
+  } else {
+    afficherQuestion();
+  }
+};
+
+/* -----------------------------------------------------------
+   8) FIN DE PARTIE
+   ----------------------------------------------------------- */
+function terminerPartie() {
+  basculerEcran("ecran-fin");
+  majBoutonDefi();                 // « Défi du jour » ou « déjà tenté »
+  const total = questionsDuTour.length;
+  $("score-final").textContent = `${score} / ${total}`;
+
+  // Message personnalisé selon le score
+  const pourcent = score / total;
+  let titre, message;
+  if (vies <= 0) {
+    titre = "Plus de vies ! 💔";
+    message = `Tu as marqué ${score} point(s). Réessaie, tu vas y arriver !`;
+  } else if (pourcent === 1) {
+    titre = "Parfait ! 🏆";
+    message = "Sans-faute ! Tu es prêt(e) pour la 4ème 💪";
+  } else if (pourcent >= 0.7) {
+    titre = "Super ! 🎉";
+    message = "Très bon score ! Encore un petit effort et c'est parfait.";
+  } else if (pourcent >= 0.4) {
+    titre = "Pas mal ! 🙂";
+    message = "Tu progresses. Relis bien les explications et recommence !";
+  } else {
+    titre = "Continue ! 📚";
+    message = "Ce n'est qu'un début. Refais le quiz pour mémoriser les réponses.";
+  }
+  $("titre-fin").textContent = titre;
+  $("message-fin").textContent = message;
+
+  // Bonus si sans-faute, puis on ajoute les XP gagnés (déclenche les niveaux)
+  if (score === total && vies > 0) xpGagneTour += 30;
+  $("xp-gagne").textContent = `+${xpGagneTour} XP gagnés !`;
+  gagnerXp(xpGagneTour);
+}
+
+/* -----------------------------------------------------------
+   8bis) XP, NIVEAUX ET RÉCOMPENSES
+   ----------------------------------------------------------- */
+function gagnerXp(xp) {
+  etat.xp += xp;
+  // Tant qu'on a assez d'XP, on monte de niveau (parfois plusieurs d'un coup)
+  while (etat.xp >= xpPourNiveau(etat.niveau)) {
+    etat.xp -= xpPourNiveau(etat.niveau);
+    etat.niveau++;
+    const reco = recompensePourNiveau(etat.niveau);
+    if (!etat.niveauxDebloques.includes(etat.niveau)) etat.niveauxDebloques.push(etat.niveau);
+    if (reco.bonusVie) etat.bonusVies++;          // +1 vie de départ
+    if (reco.theme)    etat.theme = reco.theme;    // nouveau thème
+    fileNiveaux.push(etat.niveau);                 // à montrer dans l'overlay
+  }
+  sauverEtat();
+  appliquerTheme(etat.theme);
+  renderProfil();
+  montrerProchainNiveau();
+}
+
+/* Affiche les montées de niveau une par une */
+function montrerProchainNiveau() {
+  if (fileNiveaux.length === 0) {
+    $("overlay-niveau").classList.add("cache");
+    return;
+  }
+  const niveau = fileNiveaux.shift();
+  const reco = recompensePourNiveau(niveau);
+  $("ov-niveau").textContent = niveau;
+  $("ov-emoji").textContent  = reco.emoji;
+  $("ov-nom").textContent    = reco.nom;
+  $("ov-desc").textContent   = reco.desc;
+  $("overlay-niveau").classList.remove("cache");
+  lancerConfettis();
+}
+$("ov-btn").onclick = montrerProchainNiveau;
+
+/* Met à jour le profil (niveau, barre d'XP, badges) sur l'accueil */
+function renderProfil() {
+  $("home-niveau").textContent = etat.niveau;
+  const besoin = xpPourNiveau(etat.niveau);
+  $("home-xp-txt").textContent = `${etat.xp} / ${besoin} XP`;
+  $("home-xp-bar").style.width = Math.min(100, etat.xp / besoin * 100) + "%";
+
+  const zone = $("home-badges");
+  zone.innerHTML = "";
+  if (etat.niveauxDebloques.length === 0) {
+    zone.innerHTML = `<span class="badge-vide">🔒 Gagne des niveaux pour débloquer des récompenses !</span>`;
+    return;
+  }
+  [...etat.niveauxDebloques].sort((a,b) => a-b).forEach(niv => {
+    const reco = recompensePourNiveau(niv);
+    const span = document.createElement("span");
+    span.className = "badge";
+    span.title = `${reco.nom} (niveau ${niv})`;
+    span.textContent = reco.emoji;
+    zone.appendChild(span);
+  });
+}
+
+/* Petits confettis colorés dans la fenêtre de récompense */
+function lancerConfettis() {
+  const zone = $("confettis");
+  zone.innerHTML = "";
+  const couleurs = ["#ffb020","#22c55e","#6a5cff","#ec4899","#06b6d4"];
+  for (let i = 0; i < 30; i++) {
+    const c = document.createElement("span");
+    c.className = "confetti";
+    c.style.left = Math.random() * 100 + "%";
+    c.style.background = couleurs[i % couleurs.length];
+    c.style.animationDelay = (Math.random() * 0.5) + "s";
+    zone.appendChild(c);
+  }
+}
+
+/* -----------------------------------------------------------
+   9) OUTILS : changer d'écran + rejouer
+   ----------------------------------------------------------- */
+function basculerEcran(idAffiche) {
+  ["ecran-accueil","ecran-jeu","ecran-fin","ecran-defi","ecran-redaction","ecran-dictee"].forEach(id => {
+    $(id).classList.toggle("cache", id !== idAffiche);
+  });
+}
+
+$("btn-rejouer").onclick = () => demarrerPartie(null);   // relance directement un mélange
+
+/* -----------------------------------------------------------
+   9bis) LE DÉFI DU JOUR (une question de 4ème, optionnel)
+   ----------------------------------------------------------- */
+function lancerDefi() {
+  // On choisit une question selon le jour : elle change automatiquement chaque jour.
+  defiActuel = DEFIS[numeroDuJour() % DEFIS.length];
+
+  const styleMat = COULEURS_MATIERES[defiActuel.matiere] || { e:"❓" };
+  $("defi-matiere").textContent = `${styleMat.e} ${defiActuel.matiere}`;
+  $("defi-question").textContent = defiActuel.q;
+
+  const zone = $("defi-reponses");
+  zone.innerHTML = "";
+  defiActuel.choix.forEach((texte, i) => {
+    const btn = document.createElement("button");
+    btn.className = "reponse-btn";
+    btn.textContent = texte;
+    btn.onclick = () => repondreDefi(i, btn);
+    zone.appendChild(btn);
+  });
+
+  $("defi-explication").classList.remove("visible");
+  $("defi-retour").classList.add("cache");
+  basculerEcran("ecran-defi");
+}
+
+function repondreDefi(choix, btnClique) {
+  const boutons = $("defi-reponses").querySelectorAll("button");
+  boutons.forEach((b, i) => {
+    b.disabled = true;
+    if (i === defiActuel.bonne) b.classList.add("bonne");   // bonne réponse en vert
+  });
+
+  const premierEssai = (etat.defiTenteLe !== numeroDuJour());
+  let bonus = 0;
+  let intro;
+
+  if (choix === defiActuel.bonne) {
+    if (premierEssai) { bonus = 50; intro = "✅ Bravo ! +50 XP de défi 🔥"; }
+    else              { intro = "✅ Bonne réponse ! (déjà tenté aujourd'hui : pas de bonus)"; }
+  } else {
+    btnClique.classList.add("mauvaise");
+    intro = "❌ Raté ! La bonne réponse est en vert. Reviens demain pour un nouveau défi.";
+  }
+
+  etat.defiTenteLe = numeroDuJour();   // on marque le défi comme tenté aujourd'hui
+  sauverEtat();
+
+  const exp = $("defi-explication");
+  exp.innerHTML = `<strong>${intro}</strong> ${defiActuel.expl}`;
+  exp.classList.add("visible");
+  $("defi-retour").classList.remove("cache");
+
+  if (bonus > 0) gagnerXp(bonus);   // ajoute les XP (et montre une éventuelle montée de niveau)
+}
+
+/* Change le texte du bouton du défi selon qu'il a déjà été tenté aujourd'hui */
+function majBoutonDefi() {
+  const dejaFait = (etat.defiTenteLe === numeroDuJour());
+  $("btn-defi").textContent = dejaFait ? "🔥 Défi du jour (déjà tenté)" : "🔥 Défi du jour";
+}
+
+$("btn-defi").onclick = lancerDefi;
+$("defi-retour").onclick = () => { majBoutonDefi(); basculerEcran("ecran-fin"); };
+
+/* -----------------------------------------------------------
+   9bis-photo) PHOTOS DU TRAVAIL (rédaction & dictée)
+   On écrit sur une feuille, puis on prend/choisit une photo.
+   ----------------------------------------------------------- */
+function brancherPhoto(cle, btnId, inputId, apercuId) {
+  const input = $(inputId);
+  $(btnId).onclick = () => input.click();          // ouvre l'appareil photo (mobile) ou le sélecteur de fichier (PC)
+  input.addEventListener("change", () => {
+    const fichier = input.files[0];
+    if (!fichier) return;
+    const lecteur = new FileReader();
+    lecteur.onload = () => compresserImage(lecteur.result, (petite) => {
+      const img = $(apercuId);
+      img.src = petite;
+      img.classList.remove("cache");
+      try {
+        localStorage.setItem("quiz4eme_photo_" + cle, petite);
+      } catch (e) {
+        alert("La photo s'affiche bien, mais elle est trop lourde pour être gardée en mémoire 🙂");
+      }
+    });
+    lecteur.readAsDataURL(fichier);
+  });
+}
+
+/* Réduit la taille de la photo pour qu'elle tienne dans la mémoire du navigateur */
+function compresserImage(dataUrl, callback) {
+  const img = new Image();
+  img.onload = () => {
+    const maxLargeur = 1000;
+    let w = img.width, h = img.height;
+    if (w > maxLargeur) { h = Math.round(h * maxLargeur / w); w = maxLargeur; }
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL("image/jpeg", 0.7));
+  };
+  img.onerror = () => callback(dataUrl);
+  img.src = dataUrl;
+}
+
+/* Réaffiche la dernière photo enregistrée (si elle existe) */
+function afficherPhotoSauvee(cle, apercuId) {
+  const img = $(apercuId);
+  let p = null;
+  try { p = localStorage.getItem("quiz4eme_photo_" + cle); } catch (e) {}
+  if (p) { img.src = p; img.classList.remove("cache"); }
+  else   { img.removeAttribute("src"); img.classList.add("cache"); }
+}
+
+/* -----------------------------------------------------------
+   9ter) LA RÉDACTION DU JOUR (un sujet d'écriture par jour)
+   ----------------------------------------------------------- */
+function lancerRedaction() {
+  const r = REDACTIONS[numeroDuJour() % REDACTIONS.length];
+  $("redaction-sujet").textContent = "✍️ " + r.sujet;
+  $("redaction-conseil").textContent = "💡 Conseil : " + r.conseil;
+  afficherPhotoSauvee("redaction", "redaction-photo-apercu");   // remontre la photo si elle existe
+  basculerEcran("ecran-redaction");
+}
+$("btn-redaction").onclick = lancerRedaction;
+$("redaction-retour").onclick = () => basculerEcran("ecran-fin");
+brancherPhoto("redaction", "redaction-photo-btn", "redaction-photo-input", "redaction-photo-apercu");
+
+/* -----------------------------------------------------------
+   9quater) LA DICTÉE DU JOUR (le jeu lit le texte à voix haute)
+   ----------------------------------------------------------- */
+let dicteeActuelle = "";
+let dicteeVitesse = 0.9;
+
+function lancerDictee() {
+  const indice = numeroDuJour() % DICTEES.length;
+  dicteeActuelle = DICTEES[indice];
+  dicteeVitesse = 0.9;
+  $("dictee-num").textContent = "n°" + (indice + 1);
+  afficherPhotoSauvee("dictee", "dictee-photo-apercu");   // remontre la photo si elle existe
+  $("dictee-correction").classList.add("cache");
+  $("dictee-retour").classList.add("cache");
+  basculerEcran("ecran-dictee");
+}
+
+/* Lecture vocale du texte (Web Speech API, en français) */
+function direDictee() {
+  if (!("speechSynthesis" in window)) {
+    alert("La lecture à voix haute n'est pas disponible sur ce navigateur. Demande à un adulte de te lire la dictée 🙂");
+    return;
+  }
+  window.speechSynthesis.cancel();        // on arrête une lecture en cours
+  const u = new SpeechSynthesisUtterance(dicteeActuelle);
+  u.lang = "fr-FR";
+  u.rate = dicteeVitesse;                  // 0.9 = normal, 0.6 = lent
+  window.speechSynthesis.speak(u);
+}
+$("dictee-ecouter").onclick = () => { dicteeVitesse = 0.9; direDictee(); };
+$("dictee-lent").onclick    = () => { dicteeVitesse = 0.6; direDictee(); };
+brancherPhoto("dictee", "dictee-photo-btn", "dictee-photo-input", "dictee-photo-apercu");
+$("dictee-corriger").onclick = () => {
+  $("dictee-correction").innerHTML =
+    `<p style="margin:0 0 6px;font-weight:700;">Compare avec le texte correct 👇</p>` +
+    `<div class="texte-dictee">${dicteeActuelle}</div>`;
+  $("dictee-correction").classList.remove("cache");
+  $("dictee-retour").classList.remove("cache");
+};
+$("btn-dictee").onclick = lancerDictee;
+$("dictee-retour").onclick = () => {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();   // on coupe le son en sortant
+  basculerEcran("ecran-fin");
+};
+
+/* -----------------------------------------------------------
+   10) DÉMARRAGE
+   ----------------------------------------------------------- */
+appliquerTheme(etat.theme);   // remet le thème débloqué la dernière fois
+renderProfil();               // prépare l'affichage du niveau / XP / badges
+demarrerPartie(null);         // ⬅️ on démarre DIRECTEMENT le quiz « mélange »
+</script>
+</body>
+</html>
