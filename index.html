@@ -328,7 +328,11 @@
       </div>
 
       <button class="bouton-principal" id="btn-rejouer">Rejouer 🎲</button>
-      <button class="bouton-principal" id="btn-defi" style="background:#ef4444;margin-top:10px;">🔥 Défi du jour</button>
+
+      <p style="margin:16px 0 6px;font-weight:700;color:#6b7280;">📅 Tes rendez-vous du jour</p>
+      <button class="bouton-principal" id="btn-defi" style="background:#ef4444;">🔥 Défi du jour</button>
+      <button class="bouton-principal" id="btn-redaction" style="background:#16a34a;margin-top:10px;">✍️ Rédaction du jour</button>
+      <button class="bouton-principal" id="btn-dictee" style="background:#0ea5e9;margin-top:10px;">📝 Dictée du jour</button>
     </div>
 
     <!-- ÉCRAN 4 : le défi du jour (une question de 4ème, plus difficile) -->
@@ -342,6 +346,35 @@
       <div class="reponses" id="defi-reponses"></div>
       <div class="explication" id="defi-explication"></div>
       <button class="bouton-principal cache" id="defi-retour">← Retour</button>
+    </div>
+
+    <!-- ÉCRAN 5 : la rédaction du jour -->
+    <div id="ecran-redaction" class="cache">
+      <div class="barre-haut">
+        <span>✍️ Rédaction du jour</span>
+        <span id="redaction-compteur">0 mot</span>
+      </div>
+      <div class="redaction-sujet" id="redaction-sujet"></div>
+      <p class="redaction-conseil" id="redaction-conseil"></p>
+      <textarea id="redaction-texte" placeholder="Écris ta rédaction ici…"></textarea>
+      <button class="bouton-principal" id="redaction-retour">← Retour</button>
+    </div>
+
+    <!-- ÉCRAN 6 : la dictée du jour -->
+    <div id="ecran-dictee" class="cache">
+      <div class="barre-haut">
+        <span>📝 Dictée du jour</span>
+        <span id="dictee-num"></span>
+      </div>
+      <p class="sous-titre" style="margin-bottom:14px;">Clique sur 🔊 pour écouter, écris ce que tu entends, puis vérifie !</p>
+      <div class="dictee-controles">
+        <button class="btn-mini" id="dictee-ecouter">🔊 Écouter</button>
+        <button class="btn-mini" id="dictee-lent" style="background:#a855f7;">🐢 Plus lentement</button>
+      </div>
+      <textarea id="dictee-texte" placeholder="Écris la dictée ici…"></textarea>
+      <button class="bouton-principal" id="dictee-corriger">Voir le texte correct ✅</button>
+      <div id="dictee-correction" class="cache" style="margin-top:8px;"></div>
+      <button class="bouton-principal cache" id="dictee-retour" style="margin-top:10px;">← Retour</button>
     </div>
 
   </div>
@@ -1018,6 +1051,70 @@ const DEFIS = [
 ];
 
 /* -----------------------------------------------------------
+   1ter) LES RÉDACTIONS DU JOUR (un sujet d'écriture par jour)
+   ----------------------------------------------------------- */
+const REDACTIONS = [
+  { sujet:"Raconte un souvenir de vacances qui t'a marqué(e).",
+    conseil:"Écris au moins 10 lignes, au passé, en racontant dans l'ordre ce qui s'est passé." },
+  { sujet:"Imagine que tu te réveilles un matin avec un super-pouvoir. Raconte ta journée.",
+    conseil:"Choisis un seul pouvoir et montre comment il change ta journée, du matin au soir." },
+  { sujet:"Décris ton animal préféré (réel ou imaginaire) : son apparence et son caractère.",
+    conseil:"Utilise beaucoup d'adjectifs et organise ton texte : d'abord le physique, puis le caractère." },
+  { sujet:"Écris la suite de ce conte : « Il était une fois un dragon qui ne savait pas cracher de feu… »",
+    conseil:"Invente un problème puis une solution. Pense à un début, un milieu et une fin." },
+  { sujet:"Raconte une journée vue par les yeux de ton animal de compagnie (ou d'un animal de ton choix).",
+    conseil:"Écris à la première personne (« je ») comme si tu étais l'animal." },
+  { sujet:"Décris ton endroit préféré et explique pourquoi tu t'y sens bien.",
+    conseil:"Fais appel aux 5 sens : ce qu'on voit, entend, sent, touche, goûte." },
+  { sujet:"Invente une aventure dans laquelle tu explores une grotte mystérieuse.",
+    conseil:"Crée du suspense ! Décris l'entrée, ce que tu découvres, et comment ça se termine." },
+  { sujet:"Si tu pouvais voyager dans le temps, à quelle époque irais-tu ? Raconte.",
+    conseil:"Explique pourquoi cette époque, puis raconte ce que tu y vis et qui tu rencontres." },
+  { sujet:"Raconte un moment où tu as eu très peur, puis comment tu t'es rassuré(e).",
+    conseil:"Montre tes émotions : ton cœur qui bat, tes pensées… puis le retour au calme." },
+  { sujet:"Écris une lettre à toi-même dans dix ans.",
+    conseil:"Respecte la forme d'une lettre : « Cher moi du futur, … », des questions, une signature." },
+  { sujet:"Imagine une ville du futur et décris comment on y vit.",
+    conseil:"Pense aux transports, aux maisons, à l'école… Sois inventif/inventive mais reste clair(e)." },
+  { sujet:"Raconte une dispute avec un(e) ami(e) et comment vous vous êtes réconciliés.",
+    conseil:"Explique la cause de la dispute, les paroles échangées, puis la réconciliation." },
+  { sujet:"Décris ton plat préféré pour donner envie de le goûter.",
+    conseil:"Décris les couleurs, les odeurs et le goût. Utilise des mots gourmands !" },
+  { sujet:"Invente un héros ou une héroïne et présente-le/la (nom, pouvoirs, mission).",
+    conseil:"Donne-lui un nom, une apparence, une qualité, un défaut et une grande mission." },
+  { sujet:"Raconte ce que tu ferais si tu étais invisible pendant une journée.",
+    conseil:"Choisis 3 ou 4 moments amusants ou utiles de ta journée d'invisibilité." },
+  { sujet:"Présente ta saison préférée et explique pourquoi tu l'aimes.",
+    conseil:"Parle de la météo, des activités, des fêtes et des sensations de cette saison." },
+  { sujet:"Imagine que les animaux peuvent parler. Raconte ta conversation avec l'un d'eux.",
+    conseil:"Pense à mettre des tirets pour le dialogue : « — Bonjour, dit le chat. »" },
+  { sujet:"Raconte une belle action que tu as faite, ou que tu aimerais faire, pour quelqu'un.",
+    conseil:"Explique la situation, ton geste, et ce que la personne a ressenti." },
+];
+
+/* -----------------------------------------------------------
+   1quater) LES DICTÉES DU JOUR (le jeu lit le texte à voix haute)
+   ----------------------------------------------------------- */
+const DICTEES = [
+  "Le matin, les oiseaux chantent dans le grand jardin. Les enfants jouent sous les arbres pendant que leurs parents préparent le pique-nique.",
+  "L'hiver est arrivé. La neige recouvre les toits des maisons et les rues sont silencieuses. Les chats se cachent près de la cheminée pour se réchauffer.",
+  "Pendant les vacances, nous sommes allés à la mer. Les vagues étaient hautes et l'eau était froide. Nous avons ramassé des coquillages sur la plage.",
+  "Le vieux château se dresse au sommet de la colline. Ses murs sont couverts de lierre et ses fenêtres sont cassées. Personne n'ose y entrer la nuit.",
+  "Ma grand-mère prépare une délicieuse tarte aux pommes. La cuisine sent bon le sucre et la cannelle. J'attends avec impatience de la goûter.",
+  "Les élèves écoutent attentivement leur professeur. Ils prennent des notes dans leur cahier et lèvent la main pour poser des questions.",
+  "Un petit renard roux traverse la forêt. Il cherche de la nourriture pour ses petits qui l'attendent dans le terrier. Le soleil se couche doucement.",
+  "Hier, il a plu toute la journée. Les flaques d'eau brillaient sur le trottoir et les passants ouvraient leurs parapluies. Le ciel était gris.",
+  "Le marchand vend des fruits et des légumes sur le marché. Les tomates sont rouges, les bananes sont jaunes et les pommes sont bien vertes.",
+  "Nous avons visité un musée magnifique. Les tableaux racontaient des histoires anciennes et les statues semblaient nous regarder.",
+  "Le chien de mon voisin aboie dès qu'il entend un bruit. Il garde la maison jour et nuit. Pourtant, il est très gentil avec les enfants.",
+  "Au printemps, les fleurs s'ouvrent dans les prairies. Les abeilles butinent de fleur en fleur pour fabriquer leur miel. La nature se réveille.",
+  "Le capitaine du navire observe l'horizon. La tempête approche et les marins se préparent. Les vagues frappent la coque avec violence.",
+  "Chaque samedi, je vais à la bibliothèque avec ma sœur. Nous empruntons des livres d'aventures et des bandes dessinées. Lire est notre passion.",
+  "Les pompiers sont arrivés rapidement pour éteindre l'incendie. Grâce à leur courage, personne n'a été blessé. Les habitants les ont remerciés.",
+  "Le boulanger se lève très tôt pour préparer le pain. L'odeur des croissants chauds remplit la boutique. Les premiers clients arrivent en souriant.",
+];
+
+/* -----------------------------------------------------------
    2) VARIABLES DE LA PARTIE EN COURS
    ----------------------------------------------------------- */
 let questionsDuTour = [];   // les questions de la matière choisie, mélangées
@@ -1053,8 +1150,11 @@ function sauverEtat() {
 }
 
 /* XP nécessaires pour passer du niveau actuel au suivant.
-   Courbe plus exigeante : 100, 300, 600, 1000, 1500… (de plus en plus dur). */
-function xpPourNiveau(niveau) { return 50 * niveau * (niveau + 1); }
+   Le niveau 1 est un peu plus dur (150), puis : 300, 600, 1000, 1500… */
+function xpPourNiveau(niveau) {
+  if (niveau === 1) return 150;          // 1er niveau un peu plus long à atteindre
+  return 50 * niveau * (niveau + 1);
+}
 
 /* Les récompenses débloquées à chaque niveau.
    - emoji / nom / desc : ce qui s'affiche dans la fenêtre de récompense
@@ -1400,7 +1500,7 @@ function lancerConfettis() {
    9) OUTILS : changer d'écran + rejouer
    ----------------------------------------------------------- */
 function basculerEcran(idAffiche) {
-  ["ecran-accueil","ecran-jeu","ecran-fin","ecran-defi"].forEach(id => {
+  ["ecran-accueil","ecran-jeu","ecran-fin","ecran-defi","ecran-redaction","ecran-dictee"].forEach(id => {
     $(id).classList.toggle("cache", id !== idAffiche);
   });
 }
@@ -1471,6 +1571,81 @@ function majBoutonDefi() {
 
 $("btn-defi").onclick = lancerDefi;
 $("defi-retour").onclick = () => { majBoutonDefi(); basculerEcran("ecran-fin"); };
+
+/* -----------------------------------------------------------
+   9ter) LA RÉDACTION DU JOUR (un sujet d'écriture par jour)
+   ----------------------------------------------------------- */
+function lancerRedaction() {
+  const r = REDACTIONS[numeroDuJour() % REDACTIONS.length];
+  $("redaction-sujet").textContent = "✍️ " + r.sujet;
+  $("redaction-conseil").textContent = "💡 Conseil : " + r.conseil;
+  // On récupère ce qui a déjà été écrit aujourd'hui (sauvegardé dans le navigateur)
+  let dejaEcrit = "";
+  try { dejaEcrit = localStorage.getItem("quiz4eme_redaction_" + numeroDuJour()) || ""; } catch (e) {}
+  $("redaction-texte").value = dejaEcrit;
+  majCompteurMots();
+  basculerEcran("ecran-redaction");
+}
+function majCompteurMots() {
+  const txt = $("redaction-texte").value.trim();
+  const n = txt ? txt.split(/\s+/).length : 0;
+  $("redaction-compteur").textContent = n + (n > 1 ? " mots" : " mot");
+}
+$("redaction-texte").addEventListener("input", () => {
+  majCompteurMots();
+  try { localStorage.setItem("quiz4eme_redaction_" + numeroDuJour(), $("redaction-texte").value); } catch (e) {}
+});
+$("btn-redaction").onclick = lancerRedaction;
+$("redaction-retour").onclick = () => basculerEcran("ecran-fin");
+
+/* -----------------------------------------------------------
+   9quater) LA DICTÉE DU JOUR (le jeu lit le texte à voix haute)
+   ----------------------------------------------------------- */
+let dicteeActuelle = "";
+let dicteeVitesse = 0.9;
+
+function lancerDictee() {
+  const indice = numeroDuJour() % DICTEES.length;
+  dicteeActuelle = DICTEES[indice];
+  dicteeVitesse = 0.9;
+  $("dictee-num").textContent = "n°" + (indice + 1);
+  let dejaEcrit = "";
+  try { dejaEcrit = localStorage.getItem("quiz4eme_dictee_" + numeroDuJour()) || ""; } catch (e) {}
+  $("dictee-texte").value = dejaEcrit;
+  $("dictee-correction").classList.add("cache");
+  $("dictee-retour").classList.add("cache");
+  basculerEcran("ecran-dictee");
+}
+
+/* Lecture vocale du texte (Web Speech API, en français) */
+function direDictee() {
+  if (!("speechSynthesis" in window)) {
+    alert("La lecture à voix haute n'est pas disponible sur ce navigateur. Demande à un adulte de te lire la dictée 🙂");
+    return;
+  }
+  window.speechSynthesis.cancel();        // on arrête une lecture en cours
+  const u = new SpeechSynthesisUtterance(dicteeActuelle);
+  u.lang = "fr-FR";
+  u.rate = dicteeVitesse;                  // 0.9 = normal, 0.6 = lent
+  window.speechSynthesis.speak(u);
+}
+$("dictee-ecouter").onclick = () => { dicteeVitesse = 0.9; direDictee(); };
+$("dictee-lent").onclick    = () => { dicteeVitesse = 0.6; direDictee(); };
+$("dictee-texte").addEventListener("input", () => {
+  try { localStorage.setItem("quiz4eme_dictee_" + numeroDuJour(), $("dictee-texte").value); } catch (e) {}
+});
+$("dictee-corriger").onclick = () => {
+  $("dictee-correction").innerHTML =
+    `<p style="margin:0 0 6px;font-weight:700;">Compare avec le texte correct 👇</p>` +
+    `<div class="texte-dictee">${dicteeActuelle}</div>`;
+  $("dictee-correction").classList.remove("cache");
+  $("dictee-retour").classList.remove("cache");
+};
+$("btn-dictee").onclick = lancerDictee;
+$("dictee-retour").onclick = () => {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();   // on coupe le son en sortant
+  basculerEcran("ecran-fin");
+};
 
 /* -----------------------------------------------------------
    10) DÉMARRAGE
